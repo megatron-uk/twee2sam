@@ -1,0 +1,17 @@
+:: Start
+This page is a test. [[It has links]] [[To other pages]]
+
+
+:: It has links
+Here's some more text.
+* [[Go to the end|The end]]
+
+
+:: The end
+Congratulations, this is the end.
+
+
+:: To other pages
+This is another possible passage. [[Go to the end.|The end]]
+
+
