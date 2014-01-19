@@ -3,7 +3,9 @@
 import sys, os, getopt, glob
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
 sys.path.append(os.sep.join([scriptPath, 'tw', 'lib']))
+sys.path.append(os.sep.join([scriptPath, 'lib']))
 from tiddlywiki import TiddlyWiki
+from twparser import TwParser
 
 
 def usage():
@@ -84,15 +86,17 @@ def main (argv):
 
 	# the tiddlers
 
-	print tw.toHtml()
+	print TwParser(tw)
+
+#	print tw.toHtml()
 
 	# plugins
 
-	for plugin in plugins:
-		file = open(scriptPath + os.sep + 'targets' + os.sep + target \
-								+ os.sep + 'plugins' + os.sep + plugin + os.sep + 'compiled.html')
-		print(file.read())
-		file.close()
+#	for plugin in plugins:
+#		file = open(scriptPath + os.sep + 'targets' + os.sep + target \
+#								+ os.sep + 'plugins' + os.sep + plugin + os.sep + 'compiled.html')
+#		print(file.read())
+#		file.close()
 
 	# and close it up
 
