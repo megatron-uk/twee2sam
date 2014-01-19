@@ -1,18 +1,10 @@
-README : tweecode/twee
+README : twee2sam
 ======
 
-To run twee, you will need a copy of this code, a local Python installation, and a .tw file.  You can get this fork from github using, for example, the ZIP button.  Python should come pre-installed on a Mac; a Windows installer is available at [python.org](http://www.python.org/getit/).  You can find some sample twee files at [gimcrackd.com](http://gimcrackd.com/).
+This tool is intended to convert [Twee] projects (that you can export from [Twine]) into [SAM] projects.
 
-Once you have all those, open the Terminal or a command prompt, change to the twee directory, and type something like:
+**This is a work in progress. No actual functionality has been implemented, yet.**
 
-    ./twee my-input-file.tw > my-output-file.html
-
-To compile to Sugarcane instead of Jonah, use the -t flag:
-
-    ./twee -t sugarcane my-input-file.tw > my-other-output-file.html
-
-The other targets are not recommended.  
-
-***
-
-See the [twee documentation](http://gimcrackd.com/etc/doc/) for more information about twee.  
+[twee]: https://github.com/tweecode/twee "Twee story engine"
+[twine]: https://github.com/tweecode/twine "A visual tool for creating interactive stories for the Web"
+[SAM]: http://www.haroldo-ok.com/sam-simple-adventure-maker-sms/ "SAM - Simple Adventure Maker"
