@@ -1,6 +1,8 @@
 import re;
 from tiddlywiki import TiddlyWiki
 
+
+
 class TwParser:
 	"""Parses a TiddlyWiki object into an AST"""
 
@@ -24,11 +26,13 @@ class TwParser:
 		self.passages[passage.title] = passage
 
 
+
+
 class Passage:
 	"""Represents a parsed passage"""
 
 	RE_ITEM_LIST = re.compile(r'^([#\*])\s(.*)$', flags=re.MULTILINE)
-	RE_LINK = re.compile(r'\[\[(.*)\]\]')
+	RE_LINK = re.compile(r'\[\[(.*?)\]\]')
 
 	def __init__(self, tiddler):
 		self.title = tiddler.title
@@ -40,7 +44,22 @@ class Passage:
 
 	def _parse(self, tiddler):
 		tokens = self._tokenize(tiddler)
-		self.commands = tokens
+		self.commands += self._parse_commands(tokens)
+
+	def _parse_commands(self, tokens):
+		commands = []
+
+		while tokens:
+			token = tokens.pop(0)
+			tk_type = token[0]
+			if tk_type == 'tx':
+				commands.append(TextCmd(token))
+			elif tk_type == 'lk':
+				commands.append(LinkCmd(token))
+			elif tk_type == 'ul' or tk_type == 'ol':
+				commands.append(ListCmd(token, self._parse_commands(token[1])))
+
+		return commands
 
 	def _tokenize(self, tiddler):
 		# Remove the line continuations (\ followed by line break)
@@ -95,20 +114,69 @@ class Passage:
 
 		return tokens
 
-##		tokens = []
-##
-##		# Remove the line continuations (\ followed by line break)
-##		source = re.sub(r'\\[ \t]*\n', '', str(tiddler.text))
-##
-##		for line in source.split('\n'):
-##			tokens += self._tokenize_line(line)
-##
-##		self.commands.append(source)
-##
-##	def _tokenize_line(self, line):
-##		pass
 
 
+
+class AbstractCmd:
+	"""Base class for the different kinds of commands"""
+
+	def __init__(self, kind, token, children=None):
+		self.kind = kind
+		self.children = children
+		self._parse(token)
+
+	def __repr__(self):
+		return '<cmd {0}>'.format(self.kind)
+
+
+class TextCmd(AbstractCmd):
+	"""Class for text commands"""
+
+	def __init__(self, token):
+		AbstractCmd.__init__(self, 'text', token)
+
+	def __repr__(self):
+		return '<cmd {0}{1}>'.format(self.kind, ident_list([self.text]))
+
+	def _parse(self, token):
+		self.text = token[1]
+
+
+class LinkCmd(AbstractCmd):
+	"""Class for link commands"""
+
+	def __init__(self, token):
+		AbstractCmd.__init__(self, 'link', token)
+
+	def __repr__(self):
+		return '<cmd {0}\n\ttarget: {1}\n\tlabel: {2}\n\ton_click: {3}>'.format(self.kind, self.target, self.label, self.on_click)
+
+	def _parse(self, token):
+		text = token[1]
+
+		link_action = text.split('][')
+		self.on_click = link_action[1] if len(link_action) > 1 else None
+
+		lbl_tgt = link_action[0].split('|')
+		if len(lbl_tgt) > 1:
+			self.target = lbl_tgt[-1]
+			self.label = '|'.join(lbl_tgt[:-1])
+		else:
+			self.target = link_action[0]
+			self.label = None
+
+
+class ListCmd(AbstractCmd):
+	"""Class for list commands"""
+
+	def __init__(self, token, children):
+		AbstractCmd.__init__(self, 'list', token, children)
+
+	def __repr__(self):
+		return '<cmd {0} ordered: {1}{2}>'.format(self.kind, self.ordered, ident_list(self.children))
+
+	def _parse(self, token):
+		self.ordered = token[0] != 'ul'
 
 
 def ident_list(list):
