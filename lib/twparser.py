@@ -165,6 +165,9 @@ class LinkCmd(AbstractCmd):
 			self.target = link_action[0]
 			self.label = None
 
+	def actual_label(self):
+		return self.label if self.label else self.target
+
 
 class ListCmd(AbstractCmd):
 	"""Class for list commands"""

@@ -86,7 +86,69 @@ def main (argv):
 
 	# the tiddlers
 
-	print TwParser(tw)
+	twp = TwParser(tw)
+
+
+	#
+	# Number the passages
+	#
+
+	passage_indexes = {}
+
+	def process_passage_index(passage):
+		global next_seq
+
+		if not passage.title in passage_indexes:
+			passage_indexes[passage.title] = process_passage_index.next_seq
+			process_passage_index.next_seq += 1
+
+	process_passage_index.next_seq = 0
+
+	# 'Start' _must_ be the first script
+	process_passage_index(twp.passages['Start'])
+	for passage in twp.passages.values():
+		process_passage_index(passage)
+
+	print passage_indexes
+
+
+	#
+	# Generate SAM scripts
+	#
+
+	for passage in twp.passages.values():
+		print "*** ", passage.title
+
+		def out_string(msg):
+			print '"{0}"'.format(msg)
+
+		links = []
+		for cmd in passage.commands:
+			if cmd.kind == 'text':
+				out_string(cmd.text)
+			elif cmd.kind == 'link':
+				links.append(cmd)
+				out_string(cmd.actual_label())
+			elif cmd.kind == 'list':
+				for lcmd in cmd.children:
+					if lcmd.kind == 'link':
+						links.append(lcmd)
+
+		print '!'
+
+		if links:
+			out_string('\n'.join([link.actual_label() for link in links]))
+			print '?A.'
+
+			nlink = 0
+			for link in links:
+				print 'A:{0}=[{1}j]'.format(nlink, passage_indexes[link.target])
+				nlink += 1
+
+
+
+
+
 
 #	print tw.toHtml()
 
