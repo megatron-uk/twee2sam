@@ -101,8 +101,6 @@ def main (argv):
 	for passage in twp.passages.values():
 		process_passage_index(passage)
 
-	print passage_indexes
-
 
 	#
 	# Generate the file list

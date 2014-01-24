@@ -1,4 +1,0 @@
-Start.twsam
-To_other_pages.twsam
-It_has_links.twsam
-The_end.twsam
