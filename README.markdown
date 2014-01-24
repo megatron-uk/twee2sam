@@ -1,10 +1,13 @@
 README : twee2sam
 ======
 
-This tool is intended to convert [Twee] projects (that you can export from [Twine]) into [SAM] projects.
+This tool is intended to convert [Twee] projects (that you can export from [Twine]) into [SAM] projects. With it, it's possible to create Sega Master System adventure games using Twine.
 
-**This is a work in progress. No actual functionality has been implemented, yet.**
+Currently, it supports a subset of the Twine commands; so far, only links are supported.
+
+You can see a working example at example/simple; run Compile.bat to make it run ([Python] must be in your path).
 
 [twee]: https://github.com/tweecode/twee "Twee story engine"
 [twine]: https://github.com/tweecode/twine "A visual tool for creating interactive stories for the Web"
 [SAM]: http://www.haroldo-ok.com/sam-simple-adventure-maker-sms/ "SAM - Simple Adventure Maker"
+[Python]: http://www.python.org/ "Python Programming Language"
