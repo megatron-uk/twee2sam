@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, getopt, glob
+import sys, os, getopt, glob, re
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
 sys.path.append(os.sep.join([scriptPath, 'tw', 'lib']))
 sys.path.append(os.sep.join([scriptPath, 'lib']))
@@ -9,7 +9,7 @@ from twparser import TwParser
 
 
 def usage():
-	print 'usage: twee [-a author] [-t target] [-m mergefile] [-r rss] source1 [source2..]'
+	print 'usage: twee2sam sourcefile destdir'
 
 
 def main (argv):
@@ -56,12 +56,15 @@ def main (argv):
 
 	sources = []
 
-	for arg in args:
-		for file in glob.glob(arg):
-			sources.append(file)
+	for file in glob.glob(args[0]):
+		sources.append(file)
 
 	if len(sources) == 0:
-		print 'twee: no source files specified\n'
+		print 'twee2sam: no source files specified\n'
+		sys.exit(2)
+
+	if len(args) < 2:
+		print 'twee2sam: no destination directory specified\n'
 		sys.exit(2)
 
 	for source in sources:
@@ -69,22 +72,11 @@ def main (argv):
 		tw.addTwee(file.read())
 		file.close()
 
-	# generate RSS if requested
+	dest_dir = args[1]
 
-	if rss_output != '':
-		rss_file = open(rss_output, 'w')
-		tw.toRss().write_xml(rss_file)
-		rss_file.close()
-
-	# output the target header
-
-#	if (target != 'none') and (target != 'plugin'):
-#		file = open(scriptPath + os.sep + 'targets' + os.sep + target \
-#								+ os.sep + 'header.html')
-#		print(file.read())
-#		file.close()
-
-	# the tiddlers
+	#
+	# Parse the file
+	#
 
 	twp = TwParser(tw)
 
@@ -113,14 +105,34 @@ def main (argv):
 
 
 	#
+	# Generate the file list
+	#
+
+
+	def script_name(s):
+		return re.sub(r'[^0-9A-Za-z]', '_', s) + '.twsam'
+
+	f_list = open(dest_dir + os.sep + 'Script.list.txt', 'w')
+
+	for passage in twp.passages.values():
+		f_list.write(script_name(passage.title))
+		f_list.write('\n')
+
+	f_list.close()
+
+
+	#
 	# Generate SAM scripts
 	#
 
 	for passage in twp.passages.values():
-		print "*** ", passage.title
+		script = open(dest_dir + os.sep + script_name(passage.title), 'w')
 
 		def out_string(msg):
-			print '"{0}"'.format(msg)
+			script.write('"{0}"'.format(msg))
+			script.write('\n')
+
+		# Outputs all the text
 
 		links = []
 		for cmd in passage.commands:
@@ -134,16 +146,20 @@ def main (argv):
 					if lcmd.kind == 'link':
 						links.append(lcmd)
 
-		print '!'
+		script.write('!\n')
+
+		# Builds the menu from the links
 
 		if links:
 			out_string('\n'.join([link.actual_label() for link in links]))
-			print '?A.'
+			script.write('?A.\n')
 
 			nlink = 0
 			for link in links:
-				print 'A:{0}=[{1}j]'.format(nlink, passage_indexes[link.target])
+				script.write('A:{0}=[{1}j]\n'.format(nlink, passage_indexes[link.target]))
 				nlink += 1
+
+		script.close()
 
 
 
