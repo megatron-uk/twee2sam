@@ -1,17 +1,32 @@
-:: Start
-This page is a test. [[It has links]] [[To other pages]]
-
-
-:: It has links
-Here's some more text.
+:: First Option
+[img[Left.png]]
+So, you chose the first option.
+As you can see, links are automatically turned into menus.
 * [[Go to the end|The end]]
 
 
+:: Start
+This page is a test. 
+[img[Hello.png]]
+Hello! This is a quick-and-dirty demo of twee2sam.
+* [[I would like to choose an option|First Option]]
+* [[I'd prefer to choose anoter option|Second option]]
+
+
 :: The end
+[img[Thanks.pmg]]
 Congratulations, this is the end.
 
 
-:: To other pages
-This is another possible passage. [[Go to the end.|The end]]
+:: Second option
+[img[Right.png]]
+So, you prefer the second option?
+
+[img[Observation.png]]
+As you can see, the system supports images, though you'll have to properly convert them to the SMS pallete in order for them to work.
+
+* [[Go to the end.|The end]]
+* [[Back to the beginning.|Start]]
+
 
 

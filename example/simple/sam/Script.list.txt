@@ -1,4 +1,4 @@
 Start.twsam
-To_other_pages.twsam
-It_has_links.twsam
+First_Option.twsam
+Second_option.twsam
 The_end.twsam

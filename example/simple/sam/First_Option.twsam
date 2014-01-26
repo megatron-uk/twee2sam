@@ -1,0 +1,8 @@
+"[img[Left.png]]
+So, you chose the first option.
+As you can see, links are automatically turned into menus.
+"
+!
+"Go to the end"
+?A.
+A:0=[3j]

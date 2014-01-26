@@ -1,6 +1,0 @@
-"This is another possible passage. "
-"Go to the end."
-!
-"Go to the end."
-?A.
-A:0=[3j]

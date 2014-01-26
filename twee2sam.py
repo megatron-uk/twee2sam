@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, os, getopt, glob, re
+from operator import itemgetter
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
 sys.path.append(os.sep.join([scriptPath, 'tw', 'lib']))
 sys.path.append(os.sep.join([scriptPath, 'lib']))
@@ -106,13 +107,16 @@ def main (argv):
 	# Generate the file list
 	#
 
+	passage_order = [psg for psg, idx in sorted(passage_indexes.items(), key=itemgetter(1))]
+
 
 	def script_name(s):
 		return re.sub(r'[^0-9A-Za-z]', '_', s) + '.twsam'
 
 	f_list = open(dest_dir + os.sep + 'Script.list.txt', 'w')
 
-	for passage in twp.passages.values():
+	for passage_name in passage_order:
+ 		passage = twp.passages[passage_name]
 		f_list.write(script_name(passage.title))
 		f_list.write('\n')
 
@@ -149,7 +153,8 @@ def main (argv):
 		# Builds the menu from the links
 
 		if links:
-			out_string('\n'.join([link.actual_label() for link in links]))
+			# Outputs the options separated by line breaks, max 28 chars per line
+			out_string('\n'.join([link.actual_label()[:28] for link in links]))
 			script.write('?A.\n')
 
 			nlink = 0
