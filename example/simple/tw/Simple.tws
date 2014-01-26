@@ -5,7 +5,7 @@ VC:\u005cUsers\u005cHaroldo\u005cProjetos\u005cpython\u005ctwee2sam\u005cexample
 p2
 sS'saveDestination'
 p3
-VC:\u005cUsers\u005cHaroldo\u005cProjetos\u005cpython\u005ctwee2sam\u005cexample\u005csimple\u005ctw\u005cSimple.tws
+S'C:\\Users\\Haroldo\\Projetos\\python\\twee2sam\\example\\simple\\tw\\Simple.tws'
 p4
 sS'target'
 p5
@@ -20,12 +20,12 @@ p9
 (dp11
 S'selected'
 p12
-I01
+I00
 sS'pos'
 p13
 (lp14
 I40
-aI122
+aI123
 asS'passage'
 p15
 (itiddlywiki
@@ -34,7 +34,7 @@ p16
 (dp17
 S'text'
 p18
-VThis page is a test. [[It has links]] [[To other pages]]
+VThis page is a test. \u000a[img[Hello.png]]\u000aHello! This is a quick-and-dirty demo of twee2sam.\u000a* [[I would like to choose an option|First Option]]\u000a* [[I'd prefer to choose anoter option|Second option]]
 p19
 sS'tags'
 p20
@@ -77,7 +77,7 @@ Tiddler
 p33
 (dp34
 g18
-VHere's some more text.\u000a* [[Go to the end|The end]]
+V[img[Left.png]]\u000aSo, you chose the first option.\u000aAs you can see, links are automatically turned into menus.\u000a* [[Go to the end|The end]]
 p35
 sg20
 (lp36
@@ -99,7 +99,7 @@ Rp40
 sg28
 g40
 sg29
-VIt has links
+VFirst Option
 p41
 sbsa(dp42
 g12
@@ -114,7 +114,7 @@ Tiddler
 p44
 (dp45
 g18
-VThis is another possible passage. [[Go to the end.|The end]]
+V[img[Right.png]]\u000aSo, you prefer the second option?\u000a\u000a[img[Observation.png]]\u000aAs you can see, the system supports images, though you'll have to properly convert them to the SMS pallete in order for them to work.\u000a\u000a* [[Go to the end.|The end]]\u000a* [[Back to the beginning.|Start]]\u000a
 p46
 sg20
 (lp47
@@ -136,7 +136,7 @@ Rp51
 sg28
 g51
 sg29
-VTo other pages
+VSecond option
 p52
 sbsa(dp53
 g12
@@ -151,7 +151,7 @@ Tiddler
 p55
 (dp56
 g18
-VCongratulations, this is the end.
+V[img[Thanks.pmg]]\u000aCongratulations, this is the end.
 p57
 sg20
 (lp58
