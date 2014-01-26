@@ -1,3 +1,5 @@
+@echo off
+
 del sam\*.twsam
 
 del sam\*.png

@@ -16,4 +16,5 @@ History
 =======
 
 2014-01-26: Implemented image displaying support.
+
 2014-01-23: First working version. Links are supported.
