@@ -151,8 +151,10 @@ def main (argv):
 		links = []
 		for cmd in passage.commands:
 			if cmd.kind == 'text':
-				out_string(cmd.text)
-				check_print.pending = True
+				text = cmd.text.strip()
+				if text:
+					out_string(text)
+					check_print.pending = True
 			elif cmd.kind == 'image':
 				check_print()
 				if not cmd.path in image_list:
