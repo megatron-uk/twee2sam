@@ -33,6 +33,7 @@ class Passage:
 
 	RE_ITEM_LIST = re.compile(r'^([#\*])\s(.*)$', flags=re.MULTILINE)
 	RE_LINK = re.compile(r'\[\[(.*?)\]\]')
+	RE_IMG = re.compile(r'\[img\[(.*?)\]\]')
 
 	def __init__(self, tiddler):
 		self.title = tiddler.title
@@ -54,6 +55,8 @@ class Passage:
 			tk_type = token[0]
 			if tk_type == 'tx':
 				commands.append(TextCmd(token))
+			elif tk_type == 'im':
+				commands.append(ImageCmd(token))
 			elif tk_type == 'lk':
 				commands.append(LinkCmd(token))
 			elif tk_type == 'ul' or tk_type == 'ol':
@@ -61,6 +64,7 @@ class Passage:
 
 		return commands
 
+	# The tokenization process is in bad need of some refactoring
 	def _tokenize(self, tiddler):
 		# Remove the line continuations (\ followed by line break)
 		source = re.sub(r'\\[ \t]*\n', '', str(tiddler.text))
@@ -93,6 +97,28 @@ class Passage:
 		return [(list_type, self._tokenize_string(contents.strip()))]
 
 	def _tokenize_string_not_uli(self, string):
+		tokens = []
+
+		# Processes the images
+		st_pos = 0
+		st_len = len(string)
+		for item in Passage.RE_IMG.finditer(string):
+			# Processes non-image text
+			it_st = item.start()
+			if st_pos < it_st and st_pos < st_len:
+				tokens += self._tokenize_string_not_img(string[st_pos:it_st])
+			st_pos = item.end()
+
+			# Processes link text
+			tokens.append(('im', item.group(1)))
+
+		# Processes remaining strings, if any.
+		if st_pos < st_len:
+			tokens += self._tokenize_string_not_img(string[st_pos:st_len])
+
+		return tokens
+
+	def _tokenize_string_not_img(self, string):
 		tokens = []
 
 		# Processes the links
@@ -140,6 +166,19 @@ class TextCmd(AbstractCmd):
 
 	def _parse(self, token):
 		self.text = token[1]
+
+
+class ImageCmd(AbstractCmd):
+	"""Class for image commands"""
+
+	def __init__(self, token):
+		AbstractCmd.__init__(self, 'image', token)
+
+	def __repr__(self):
+		return '<cmd {0}{1}>'.format(self.kind, ident_list([self.path]))
+
+	def _parse(self, token):
+		self.path = token[1]
 
 
 class LinkCmd(AbstractCmd):

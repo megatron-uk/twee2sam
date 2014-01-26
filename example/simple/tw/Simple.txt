@@ -14,7 +14,7 @@ Hello! This is a quick-and-dirty demo of twee2sam.
 
 
 :: The end
-[img[Thanks.pmg]]
+[img[Thanks.png]]
 Congratulations, this is the end.
 
 

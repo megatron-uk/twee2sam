@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, getopt, glob, re
+import sys, os, getopt, glob, re, shutil
 from operator import itemgetter
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
 sys.path.append(os.sep.join([scriptPath, 'tw', 'lib']))
@@ -73,6 +73,7 @@ def main (argv):
 		tw.addTwee(file.read())
 		file.close()
 
+	src_dir = os.path.dirname(sources[0])
 	dest_dir = args[1]
 
 	#
@@ -110,8 +111,11 @@ def main (argv):
 	passage_order = [psg for psg, idx in sorted(passage_indexes.items(), key=itemgetter(1))]
 
 
+	def name_to_identifier(s):
+		return re.sub(r'[^0-9A-Za-z]', '_', s)
+
 	def script_name(s):
-		return re.sub(r'[^0-9A-Za-z]', '_', s) + '.twsam'
+		return name_to_identifier(s) + '.twsam'
 
 	f_list = open(dest_dir + os.sep + 'Script.list.txt', 'w')
 
@@ -127,8 +131,16 @@ def main (argv):
 	# Generate SAM scripts
 	#
 
+	image_list = []
 	for passage in twp.passages.values():
 		script = open(dest_dir + os.sep + script_name(passage.title), 'w')
+
+		def check_print():
+			if check_print.pending:
+				script.write('!\n')
+				check_print.pending = False
+
+		check_print.pending = False
 
 		def out_string(msg):
 			script.write('"{0}"'.format(msg))
@@ -140,6 +152,12 @@ def main (argv):
 		for cmd in passage.commands:
 			if cmd.kind == 'text':
 				out_string(cmd.text)
+				check_print.pending = True
+			elif cmd.kind == 'image':
+				check_print()
+				if not cmd.path in image_list:
+					image_list.append(cmd.path)
+				script.write('{0}i\n'.format(image_list.index(cmd.path)))
 			elif cmd.kind == 'link':
 				links.append(cmd)
 				out_string(cmd.actual_label())
@@ -148,7 +166,7 @@ def main (argv):
 					if lcmd.kind == 'link':
 						links.append(lcmd)
 
-		script.write('!\n')
+		check_print()
 
 		# Builds the menu from the links
 
@@ -161,27 +179,28 @@ def main (argv):
 			for link in links:
 				script.write('A:{0}=[{1}j]\n'.format(nlink, passage_indexes[link.target]))
 				nlink += 1
+		else:
+			# No links? Generates an infinite loop.
+			script.write('1[1]\n')
 
 		script.close()
 
 
+	#
+	# Copy images and builds the image list
+	#
 
 
+	image_list_file = open(dest_dir + os.sep + 'Images.txt', 'w')
 
+	for image_path in image_list:
+		image_name = name_to_identifier(os.path.splitext(os.path.basename(image_path))[0])
+		image_list_file.write(image_name + '\n');
+		shutil.copyfile(src_dir + os.sep + image_path, dest_dir + os.sep + image_name + '.png')
 
-#	print tw.toHtml()
+	image_list_file.write('blank\n');
+ 	image_list_file.close()
 
-	# plugins
-
-#	for plugin in plugins:
-#		file = open(scriptPath + os.sep + 'targets' + os.sep + target \
-#								+ os.sep + 'plugins' + os.sep + plugin + os.sep + 'compiled.html')
-#		print(file.read())
-#		file.close()
-
-	# and close it up
-
-#	print '</div></html>'
 
 
 if __name__ == '__main__':
