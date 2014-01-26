@@ -11,7 +11,7 @@ You can see a working example at example/simple; run Compile.bat to make it run 
 Image support
 -------------
 
-The images must be in the png format, have a resolution of 256x144, and can't have more than 16 colors. Be careful to not use an exceedingly detailed image, as SAM can't display images with more than 256 tiles. 
+The images must be in the png format, have a resolution of 256x144, and can't have more than 16 colors. Be careful to not use an exceedingly detailed image, as SAM can't display images with more than 320 tiles. 
 
 
 
