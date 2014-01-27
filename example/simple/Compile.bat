@@ -1,7 +1,7 @@
 @echo off
 
 call Cleanup.bat
-python ../../twee2sam.py tw/Simple.txt sam
+..\..\bin\twee2sam.exe tw/Simple.txt sam
 if errorlevel 1 goto :twee2sam_error
 
 cd sam
