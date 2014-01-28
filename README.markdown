@@ -5,7 +5,7 @@ This tool is intended to convert [Twee] projects (that you can export from [Twin
 
 Currently, it supports a subset of the Twine commands; so far, only links and images are supported.
 
-You can see a working example at example/simple; run Compile.bat to make it run ([Python] must be in your path).
+You can see a working example at example/simple; run Compile.bat to make it run.
 
 
 Image support
@@ -17,6 +17,8 @@ The images must be in the png format, have a resolution of 256x144, and can't ha
 
 History
 =======
+
+2014-01-27: Generated a compiled exe version of twee2sam.py, so that people can use the tool without having Python installed.
 
 2014-01-26: Implemented image displaying support.
 
