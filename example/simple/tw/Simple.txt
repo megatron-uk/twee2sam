@@ -8,7 +8,7 @@ As you can see, links are automatically turned into menus.
 :: Start
 This page is a test. 
 [img[Hello.png]]
-Hello! This is a quick-and-dirty demo of twee2sam.
+Hello! This is a "quick-and-dirty" demo of twee2sam.
 * [[I would like to choose an option|First Option]]
 * [[I'd prefer to choose anoter option|Second option]]
 

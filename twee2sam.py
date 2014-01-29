@@ -143,6 +143,7 @@ def main (argv):
 		check_print.pending = False
 
 		def out_string(msg):
+			msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
 			script.write('"{0}"'.format(msg))
 			script.write('\n')
 
