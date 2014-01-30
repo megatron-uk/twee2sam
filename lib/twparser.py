@@ -32,6 +32,7 @@ class Passage:
 	"""Represents a parsed passage"""
 
 	RE_ITEM_LIST = re.compile(r'^([#\*])\s(.*)$', flags=re.MULTILINE)
+	RE_MACRO = re.compile(r'\<\<(\w+)(\s*.*?)\>\>')
 	RE_LINK = re.compile(r'\[\[(.*?)\]\]')
 	RE_IMG = re.compile(r'\[img\[(.*?)\]\]')
  	RE_TEXT = re.compile(r'(.*)', flags=re.DOTALL)
@@ -56,6 +57,10 @@ class Passage:
 			tk_type = token[0]
 			if tk_type == 'tx':
 				commands.append(TextCmd(token))
+			elif tk_type == 'mc':
+				macro = self._parse_macro(token, tokens)
+				if macro:
+					commands.append(macro)
 			elif tk_type == 'im':
 				commands.append(ImageCmd(token))
 			elif tk_type == 'lk':
@@ -107,6 +112,9 @@ class Passage:
 			list_type = 'ul' if kind == '*' else 'ol'
 			return [(list_type, self._tokenize_string(contents.strip()))]
 
+		def process_macro(match):
+			return [('mc', (match.group(1), match.group(2)))]
+
 		def process_image(match):
 			return [('im', match.group(1))]
 
@@ -118,12 +126,20 @@ class Passage:
 
 		tests = [
 			(Passage.RE_ITEM_LIST, process_item_list, 1),
+			(Passage.RE_MACRO, process_macro, 0),
 			(Passage.RE_IMG, process_image, 0),
 			(Passage.RE_LINK, process_link, 0),
             (Passage.RE_TEXT, process_text, 0)
 		]
 
 		return test_command(string, tests)
+
+	def _parse_macro(self, token, tokens):
+ 		kind, params = token[1]
+		if kind == 'set':
+			return SetMacro(token)
+		if kind == 'pause':
+			return PauseMacro(token)
 
 
 
@@ -204,6 +220,33 @@ class ListCmd(AbstractCmd):
 
 	def _parse(self, token):
 		self.ordered = token[0] != 'ul'
+
+
+
+
+class AbstractMacro(AbstractCmd):
+	"""Class for macros """
+
+	def __init__(self, token, children=[]):
+		AbstractCmd.__init__(self, token[1][0], token, children)
+		self.params = token[1][1]
+
+	def __repr__(self):
+		return '<cmd {0}{1}>'.format(self.kind, ident_list([self.text]))
+
+	def _parse(self, token):
+		pass
+
+
+class SetMacro(AbstractMacro):
+	"""Class for the 'set' macro"""
+
+
+class PauseMacro(AbstractMacro):
+	"""Class for the 'pause' macro"""
+
+
+
 
 
 def ident_list(list):

@@ -168,6 +168,9 @@ def main (argv):
 				for lcmd in cmd.children:
 					if lcmd.kind == 'link':
 						links.append(lcmd)
+			elif cmd.kind == 'pause':
+				check_print.pending = True
+				check_print()
 
 		check_print()
 

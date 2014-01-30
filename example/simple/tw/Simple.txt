@@ -7,6 +7,12 @@ As you can see, links are automatically turned into menus.
 
 :: Start
 This page is a test. 
+
+<<set $started = true>>
+<<pause>>
+
+Let's display an image:
+
 [img[Hello.png]]
 Hello! This is a "quick-and-dirty" demo of twee2sam.
 * [[I would like to choose an option|First Option]]
