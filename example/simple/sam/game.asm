@@ -15,9 +15,9 @@
 .endme
 
 .rombankmap
-	bankstotal 4
+	bankstotal 32
 	banksize $4000
-	banks 4
+	banks 32
 .endro
 
 ;==============================================================
