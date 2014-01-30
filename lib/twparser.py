@@ -34,6 +34,7 @@ class Passage:
 	RE_ITEM_LIST = re.compile(r'^([#\*])\s(.*)$', flags=re.MULTILINE)
 	RE_LINK = re.compile(r'\[\[(.*?)\]\]')
 	RE_IMG = re.compile(r'\[img\[(.*?)\]\]')
+ 	RE_TEXT = re.compile(r'(.*)', flags=re.DOTALL)
 
 	def __init__(self, tiddler):
 		self.title = tiddler.title
@@ -64,81 +65,65 @@ class Passage:
 
 		return commands
 
-	# The tokenization process is in bad need of some refactoring
+	# Well, it's not really a tokenizer, more like a 1st level parser, but meh.
 	def _tokenize(self, tiddler):
 		# Remove the line continuations (\ followed by line break)
 		source = re.sub(r'\\[ \t]*\n', '', str(tiddler.text))
 		return self._tokenize_string(source)
 
 	def _tokenize_string(self, string):
-		tokens = []
+		def test_command(string, remaining_tests):
+			# Determine what will be checked
+			if not remaining_tests:
+				return []
 
-		# Processes the ordered/unordered lists
-		st_pos = 0
-		st_len = len(string)
-		for item in Passage.RE_ITEM_LIST.finditer(string):
-			# Processes non-list strings
-			it_st = item.start()
-			if st_pos < it_st and st_pos < st_len:
-				tokens += self._tokenize_string_not_uli(string[st_pos:it_st])
-			st_pos = item.end() + 1 # Skips the line break after the item
+			regex, action, skipped_chars = remaining_tests[0]
+			remaining_tests = remaining_tests[1:]
 
-			# Processes list strings
-			tokens += self._tokenize_string_uli(item.group(1), item.group(2))
+			# Starts checking for snippets matching the regex
+			tokens = []
 
-		# Processes remaining strings, if any.
-		if st_pos < st_len:
-			tokens += self._tokenize_string_not_uli(string[st_pos:st_len])
+			st_pos = 0
+			st_len = len(string)
+			for item in regex.finditer(string):
+				# Processes preceding non-matching text
+				it_st = item.start()
+				if st_pos < it_st and st_pos < st_len:
+					tokens += test_command(string[st_pos:it_st], remaining_tests)
+				st_pos = item.end() + skipped_chars
 
-		return tokens
+				# Executes the action
+				tokens += action(item)
 
-	def _tokenize_string_uli(self, kind, contents):
-		list_type = 'ul' if kind == '*' else 'ol'
-		return [(list_type, self._tokenize_string(contents.strip()))]
+			# Processes remaining text, if any.
+			if st_pos < st_len:
+				tokens += test_command(string[st_pos:st_len], remaining_tests)
 
-	def _tokenize_string_not_uli(self, string):
-		tokens = []
+			return tokens
 
-		# Processes the images
-		st_pos = 0
-		st_len = len(string)
-		for item in Passage.RE_IMG.finditer(string):
-			# Processes non-image text
-			it_st = item.start()
-			if st_pos < it_st and st_pos < st_len:
-				tokens += self._tokenize_string_not_img(string[st_pos:it_st])
-			st_pos = item.end()
+		def process_item_list(match):
+			kind = match.group(1)
+			contents = match.group(2)
+			list_type = 'ul' if kind == '*' else 'ol'
+			return [(list_type, self._tokenize_string(contents.strip()))]
 
-			# Processes link text
-			tokens.append(('im', item.group(1)))
+		def process_image(match):
+			return [('im', match.group(1))]
 
-		# Processes remaining strings, if any.
-		if st_pos < st_len:
-			tokens += self._tokenize_string_not_img(string[st_pos:st_len])
+		def process_link(match):
+			return [('lk', match.group(1))]
 
-		return tokens
+		def process_text(match):
+			return [('tx', match.group(1))]
 
-	def _tokenize_string_not_img(self, string):
-		tokens = []
+		tests = [
+			(Passage.RE_ITEM_LIST, process_item_list, 1),
+			(Passage.RE_IMG, process_image, 0),
+			(Passage.RE_LINK, process_link, 0),
+            (Passage.RE_TEXT, process_text, 0)
+		]
 
-		# Processes the links
-		st_pos = 0
-		st_len = len(string)
-		for item in Passage.RE_LINK.finditer(string):
-			# Processes non-link text
-			it_st = item.start()
-			if st_pos < it_st and st_pos < st_len:
-				tokens.append(('tx', string[st_pos:it_st]))
-			st_pos = item.end()
-
-			# Processes link text
-			tokens.append(('lk', item.group(1)))
-
-		# Processes remaining strings, if any.
-		if st_pos < st_len:
-			tokens.append(('tx', string[st_pos:st_len]))
-
-		return tokens
+		return test_command(string, tests)
 
 
 
