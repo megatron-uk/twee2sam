@@ -140,7 +140,7 @@ VSecond option
 p52
 sbsa(dp53
 g12
-I00
+I01
 sg13
 (lp54
 I602
@@ -151,7 +151,7 @@ Tiddler
 p55
 (dp56
 g18
-V[img[Thanks.png]]\u000aCongratulations, this is the end.
+V[img[Thanks.png]]\u000a\u000aThis is a really long string to see how the 512 char limit is being handled by the engine. You see, on SAM, strings are kept on a character buffer on RAM, that are later sent to the screen; this char buffer has a 512 byte limit. Of course, if things come to that, you can always use the 'pause' macro to immediately display the current text to the screen. \u000aFor now, twee2sam will be simply cutting off the excess, in order to prevent the SAM interpreter from crashing. A more appropriate correction will hopefully be implemented later.\u000a\u000a<<pause>>\u000aCongratulations, this is the end.
 p57
 sg20
 (lp58

@@ -138,14 +138,29 @@ def main (argv):
 		def check_print():
 			if check_print.pending:
 				script.write('!\n')
+				check_print.in_buffer = 0
 				check_print.pending = False
 
 		check_print.pending = False
+		check_print.in_buffer = 0
+
+		def warning(msg):
+			print 'Warning on {0}: {1}'.format(passage.title, msg)
 
 		def out_string(msg):
 			msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
+			msg_len = len(msg)
+
+			# Checks for buffer overflow
+			if check_print.in_buffer + msg_len > 511:
+				warning("The text exceeds the maximum buffer size; try to intersperse the text with some <<pause>> macros")
+				remaining = max(0, 511 - check_print.in_buffer)
+				msg = msg[:remaining]
+
 			script.write('"{0}"'.format(msg))
 			script.write('\n')
+
+			check_print.in_buffer += len(msg)
 
 		# Outputs all the text
 
@@ -180,6 +195,7 @@ def main (argv):
 			# Outputs the options separated by line breaks, max 28 chars per line
 			out_string('\n'.join([link.actual_label()[:28] for link in links]))
 			script.write('?A.\n')
+			check_print.in_buffer = 0
 
 			nlink = 0
 			for link in links:
