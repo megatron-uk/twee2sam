@@ -13,10 +13,24 @@ Image support
 
 The images must be in the png format, have a resolution of 256x144, and can't have more than 16 colors. Be careful to not use an exceedingly detailed image, as SAM can't display images with more than 320 tiles. 
 
+Commands
+========
+
+[img[imagename.png]]
+--------------------
+
+Displays an image
+
+&lt;&lt;pause&gt;&gt;
+---------
+
+Forces a page break or, if there's no text, just waits for the user to press any button.
 
 
 History
 =======
+
+2014-01-30: Implemented text buffer overflow checking and also implemented the &lt;&lt;pause&gt;&gt; command.
 
 2014-01-27: Generated a compiled exe version of twee2sam.py, so that people can use the tool without having Python installed.
 
