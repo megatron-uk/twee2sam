@@ -137,9 +137,20 @@ class Passage:
 	def _parse_macro(self, token, tokens):
  		kind, params = token[1]
 		if kind == 'set':
-			return SetMacro(token)
-		if kind == 'pause':
-			return PauseMacro(token)
+			macro = SetMacro(token)
+		elif kind == 'pause':
+			macro = PauseMacro(token)
+		else:
+			macro = InvalidMacro(token, 'unknown macro: ' + kind)
+
+		if macro.error:
+			self._warning(macro.error)
+			return InvalidMacro(token, macro.error)
+
+		return macro
+
+	def _warning(self, msg):
+		print 'Warning on {0}: {1}'.format(self.title, msg)
 
 
 
@@ -227,9 +238,12 @@ class ListCmd(AbstractCmd):
 class AbstractMacro(AbstractCmd):
 	"""Class for macros """
 
+	RE_EXPRESSION = re.compile(r'(true|false|[\w\$])', flags=re.IGNORECASE)
+
 	def __init__(self, token, children=[]):
 		AbstractCmd.__init__(self, token[1][0], token, children)
 		self.params = token[1][1]
+		self.error = None
 
 	def __repr__(self):
 		return '<cmd {0}{1}>'.format(self.kind, ident_list([self.text]))
@@ -237,9 +251,45 @@ class AbstractMacro(AbstractCmd):
 	def _parse(self, token):
 		pass
 
+	def _parse_expression(self, expr):
+		expr = expr.strip()
+		if not AbstractMacro.RE_EXPRESSION.match(expr):
+			self.error = 'invalid expression: ' + expr
+			return None
+
+		if expr.lower() == 'true':
+			return True
+		elif expr.lower() == 'false':
+			return False
+		else:
+			return expr
+
+
+
+
+class InvalidMacro(AbstractMacro):
+	"""Class for invalid macros"""
+
+	def __init__(self, token, error=None):
+		AbstractMacro.__init__(self, token)
+		self.kind = 'invalid'
+		self.error = error
+
 
 class SetMacro(AbstractMacro):
 	"""Class for the 'set' macro"""
+
+	RE_ATTRIBUTION = re.compile(r'\s*([\w\$]+)\s*(?:=|\sto\s)\s*(.*)')
+
+	def _parse(self, token):
+		kind, params = token[1]
+		match = SetMacro.RE_ATTRIBUTION.match(params)
+		if not match:
+			self.error = 'invalid "set" expression: ' + params
+			return
+
+		self.target = match.group(1)
+		self.expr = self._parse_expression(match.group(2))
 
 
 class PauseMacro(AbstractMacro):

@@ -131,6 +131,10 @@ def main (argv):
 	# Generate SAM scripts
 	#
 
+	# A is used as a temp var for menu selection
+	# C and abover are available
+	variables = VariableFactory(2)
+
 	image_list = []
 	for passage in twp.passages.values():
 		script = open(dest_dir + os.sep + script_name(passage.title), 'w')
@@ -186,6 +190,14 @@ def main (argv):
 			elif cmd.kind == 'pause':
 				check_print.pending = True
 				check_print()
+			elif cmd.kind == 'set':
+				if cmd.expr is True:
+					script.write('1')
+				elif cmd.expr is False:
+					script.write('0')
+				else:
+					script.write(variables.get_var(cmd.expr))
+				script.write(variables.set_var(cmd.target) + '\n')
 
 		check_print()
 
@@ -222,6 +234,44 @@ def main (argv):
 
 	image_list_file.write('blank\n');
  	image_list_file.close()
+
+
+
+class VariableFactory:
+
+	def __init__(self, first_available):
+		self.next_available = first_available
+		self.vars = {}
+		self.never_used = []
+		self.never_set = []
+
+	def set_var(self, name):
+		if not name in self.vars:
+			self._create_var(name)
+			self.never_used.append(name)
+
+		if name in self.never_set:
+			self.never_set.remove(name)
+
+		return '{0}.'.format(self.vars[name])
+
+	def get_var(self, name):
+		if not name in self.vars:
+			self._create_var(name)
+			self.never_set.append(name)
+
+		if name in self.never_used:
+			self.never_used.remove(name)
+
+		return '{0}:'.format(self.vars[name])
+
+	def _create_var(self, name):
+		self.vars[name] = self._num_to_ref(self.next_available)
+		self.next_available += 1
+
+	def _num_to_ref(self, num):
+		return chr(ord('A') + num)
+
 
 
 
