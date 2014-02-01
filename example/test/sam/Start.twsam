@@ -1,0 +1,33 @@
+"This page is a test."
+1C.
+!
+C:[
+"Okay, you started!"
+ 0]
+D: 0=[
+"Okay, no nonexistant variables here!"
+ 0]
+"Let's display an image:"
+!
+4i
+"Hello! This is a 'quick-and-dirty' demo of twee2sam."
+D:[
+1E. 0]
+C:[
+1F. 0]
+!
+E:["I would like to end this
+"
+0]
+F:["I would like to choose an op
+"
+0]
+"I'd prefer to choose anoter 
+"
+?A.
+0B.
+E:[A:B:=[3j]B:1+B.
+0]
+F:[A:B:=[1j]B:1+B.
+0]
+A:B:=[2j]B:1+B.

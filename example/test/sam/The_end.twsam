@@ -1,0 +1,7 @@
+3i
+"This is a really long string to see how the 512 char limit is being handled by the engine. You see, on SAM, strings are kept on a character buffer on RAM, that are later sent to the screen; this char buffer has a 512 byte limit. Of course, if things come to that, you can always use the 'pause' macro to immediately display the current text to the screen. 
+For now, twee2sam will be simply cutting off the excess, in order to prevent the SAM interpreter from crashing. A more appropriate correction will hopeful"
+!
+"Congratulations, this is the end."
+!
+1[1]

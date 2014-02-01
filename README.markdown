@@ -11,7 +11,7 @@ You can see a working example at example/simple; run Compile.bat to make it run.
 Compiled version
 ----------------
 
-You can get a compiled version from https://dl.dropboxusercontent.com/u/1235428/sms/twee2sam-2014-01-30a.rar
+You can get a compiled version from https://dl.dropboxusercontent.com/u/1235428/sms/twee2sam-2014-02-01a.rar
 
 Of from the [SMSPower thread](http://www.smspower.org/forums/viewtopic.php?t=14568)
 
@@ -61,6 +61,8 @@ So, essentially, the tool is currently supporting either single boolean constant
 
 History
 =======
+
+2014-02-01: Implemented the &lt;&lt;set&gt;&gt; and &lt;&lt;if&gt;&gt; commands.
 
 2014-01-30: Implemented text buffer overflow checking and also implemented the &lt;&lt;pause&gt;&gt; command.
 
