@@ -34,6 +34,30 @@ Displays an image
 
 Forces a page break or, if there's no text, just waits for the user to press any button.
 
+&lt;&lt;set *variable* to *expression*&gt;&gt;
+---------
+
+Sets the value of a variable to the value of the expression.
+
+&lt;&lt;if *expression*&gt;&gt;...&lt;&lt;endif&gt;&gt;
+---------
+
+Conditionally executes the code between &lt;&lt;if &gt;&gt; and &lt;&lt;endif&gt;&gt; if the *expression* evaluates to *true*.
+
+Note: &lt;&lt;else&gt;&gt; is not implemented yet.
+
+Expressions
+-----------
+
+Currently, twee2sam has only limited expression support:
+
+- **true** evaluates to true;
+- **false** evaluates to false;
+- ***variable name*** evaluates to the current value of the variable;
+- **not** ***variable_name*** or ***!variable_name*** evaluates to the logical negation of the current value of the variable; that is, if 'variable' is true, '!variable' is false, and vice versa.
+
+So, essentially, the tool is currently supporting either single boolean constants or single variables, with or without negation. Future versions will support more complex expressions.
+
 
 History
 =======
