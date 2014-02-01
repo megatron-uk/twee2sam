@@ -132,7 +132,7 @@ def main (argv):
 	#
 
 	# A is used as a temp var for menu selection
-	# C and abover are available
+	# C and above are available
 	variables = VariableFactory(2)
 
 	image_list = []
@@ -166,38 +166,54 @@ def main (argv):
 
 			check_print.in_buffer += len(msg)
 
+		def out_expr(expr):
+			if expr is True:
+				script.write('1')
+			elif expr is False:
+				script.write('0')
+			else:
+				script.write(variables.get_var(cmd.expr))
+
 		# Outputs all the text
 
 		links = []
-		for cmd in passage.commands:
-			if cmd.kind == 'text':
-				text = cmd.text.strip()
-				if text:
-					out_string(text)
+
+		def process_command_list(commands):
+			for cmd in commands:
+				if cmd.kind == 'text':
+					text = cmd.text.strip()
+					if text:
+						out_string(text)
+						check_print.pending = True
+				elif cmd.kind == 'image':
+					check_print()
+					if not cmd.path in image_list:
+						image_list.append(cmd.path)
+					script.write('{0}i\n'.format(image_list.index(cmd.path)))
+				elif cmd.kind == 'link':
+					links.append(cmd)
+					out_string(cmd.actual_label())
+				elif cmd.kind == 'list':
+					for lcmd in cmd.children:
+						if lcmd.kind == 'link':
+							links.append(lcmd)
+				elif cmd.kind == 'pause':
 					check_print.pending = True
-			elif cmd.kind == 'image':
-				check_print()
-				if not cmd.path in image_list:
-					image_list.append(cmd.path)
-				script.write('{0}i\n'.format(image_list.index(cmd.path)))
-			elif cmd.kind == 'link':
-				links.append(cmd)
-				out_string(cmd.actual_label())
-			elif cmd.kind == 'list':
-				for lcmd in cmd.children:
-					if lcmd.kind == 'link':
-						links.append(lcmd)
-			elif cmd.kind == 'pause':
-				check_print.pending = True
-				check_print()
-			elif cmd.kind == 'set':
-				if cmd.expr is True:
-					script.write('1')
-				elif cmd.expr is False:
-					script.write('0')
-				else:
-					script.write(variables.get_var(cmd.expr))
-				script.write(variables.set_var(cmd.target) + '\n')
+					check_print()
+				elif cmd.kind == 'set':
+					if cmd.expr is True:
+						script.write('1')
+					elif cmd.expr is False:
+						script.write('0')
+					else:
+						script.write(variables.get_var(cmd.expr))
+					script.write(variables.set_var(cmd.target) + '\n')
+				elif cmd.kind == 'if':
+					script.write(variables.get_var(cmd.expr) + '[\n')
+					process_command_list(cmd.children)
+					script.write(' 0]\n')
+
+		process_command_list(passage.commands)
 
 		check_print()
 

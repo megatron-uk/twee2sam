@@ -1,6 +1,9 @@
 "This page is a test."
 1C.
 !
+C:[
+"Okay, you started!"
+ 0]
 "Let's display an image:"
 !
 4i

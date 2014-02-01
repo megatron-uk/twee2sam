@@ -11,6 +11,10 @@ This page is a test.
 <<set $started = true>>
 <<pause>>
 
+<<if $started>>
+	Okay, you started!
+<<endif>>
+
 Let's display an image:
 
 [img[Hello.png]]

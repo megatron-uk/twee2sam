@@ -34,7 +34,7 @@ p16
 (dp17
 S'text'
 p18
-VThis page is a test. \u000a\u000a<<set $started = true>>\u000a<<pause>>\u000a\u000aLet's display an image:\u000a\u000a[img[Hello.png]]\u000aHello! This is a "quick-and-dirty" demo of twee2sam.\u000a* [[I would like to choose an option|First Option]]\u000a* [[I'd prefer to choose anoter option|Second option]]
+VThis page is a test. \u000a\u000a<<set $started = true>>\u000a<<pause>>\u000a\u000a<<if $started>>\u000a	Okay, you started!\u000a<<endif>>\u000a\u000aLet's display an image:\u000a\u000a[img[Hello.png]]\u000aHello! This is a "quick-and-dirty" demo of twee2sam.\u000a* [[I would like to choose an option|First Option]]\u000a* [[I'd prefer to choose anoter option|Second option]]
 p19
 sS'tags'
 p20
@@ -140,7 +140,7 @@ VSecond option
 p52
 sbsa(dp53
 g12
-I01
+I00
 sg13
 (lp54
 I602

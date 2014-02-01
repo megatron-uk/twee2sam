@@ -47,12 +47,14 @@ class Passage:
 
 	def _parse(self, tiddler):
 		tokens = self._tokenize(tiddler)
+		self._block_stack = []
 		self.commands += self._parse_commands(tokens)
 
 	def _parse_commands(self, tokens):
 		commands = []
+		close_block = False
 
-		while tokens:
+		while tokens and not close_block:
 			token = tokens.pop(0)
 			tk_type = token[0]
 			if tk_type == 'tx':
@@ -60,7 +62,10 @@ class Passage:
 			elif tk_type == 'mc':
 				macro = self._parse_macro(token, tokens)
 				if macro:
-					commands.append(macro)
+					if isinstance(macro, EndMacro):
+						close_block = True
+					else:
+						commands.append(macro)
 			elif tk_type == 'im':
 				commands.append(ImageCmd(token))
 			elif tk_type == 'lk':
@@ -140,14 +145,28 @@ class Passage:
 			macro = SetMacro(token)
 		elif kind == 'pause':
 			macro = PauseMacro(token)
+		elif kind == 'if':
+			macro = self._parse_if(token, tokens)
+		elif kind == 'endif':
+			if self._block_stack and self._block_stack[-1].kind == 'if':
+				self._block_stack.pop()
+			else:
+				self._warning('<<endif>> without <<if>>')
+			macro = EndMacro(token)
 		else:
 			macro = InvalidMacro(token, 'unknown macro: ' + kind)
 
-		if macro.error:
+		if macro and macro.error:
 			self._warning(macro.error)
 			return InvalidMacro(token, macro.error)
 
 		return macro
+
+	def _parse_if(self, token, tokens):
+		if_macro = IfMacro(token)
+		self._block_stack.append(if_macro)
+		if_macro.children = self._parse_commands(tokens);
+		return if_macro
 
 	def _warning(self, msg):
 		print 'Warning on {0}: {1}'.format(self.title, msg)
@@ -294,6 +313,19 @@ class SetMacro(AbstractMacro):
 
 class PauseMacro(AbstractMacro):
 	"""Class for the 'pause' macro"""
+
+
+class IfMacro(AbstractMacro):
+	"""Class for the 'if' macro"""
+
+	def _parse(self, token):
+		kind, params = token[1]
+		self.expr = self._parse_expression(params)
+		self.children = []
+		self.else_block = []
+
+class EndMacro(AbstractMacro):
+	"""Class for closing the current macro"""
 
 
 
