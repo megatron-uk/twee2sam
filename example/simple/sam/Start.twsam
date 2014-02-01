@@ -11,9 +11,23 @@ D: 0=[
 !
 4i
 "Hello! This is a 'quick-and-dirty' demo of twee2sam."
+D:[
+1E. 0]
+C:[
+1F. 0]
 !
-"I would like to choose an op
-I'd prefer to choose anoter "
+E:["I would like to end this
+"
+0]
+F:["I would like to choose an op
+"
+0]
+"I'd prefer to choose anoter 
+"
 ?A.
-A:0=[1j]
-A:1=[2j]
+0B.
+E:[A:B:=[3j]B:1+B.
+0]
+F:[A:B:=[1j]B:1+B.
+0]
+A:B:=[2j]B:1+B.

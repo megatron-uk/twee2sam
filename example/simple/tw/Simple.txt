@@ -22,7 +22,12 @@ Let's display an image:
 
 [img[Hello.png]]
 Hello! This is a "quick-and-dirty" demo of twee2sam.
+<<if $nonExistant>>
+* [[I would like to end this|The end]]
+<<endif>>
+<<if $started>>
 * [[I would like to choose an option|First Option]]
+<<endif>>
 * [[I'd prefer to choose anoter option|Second option]]
 
 

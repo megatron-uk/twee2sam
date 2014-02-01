@@ -132,6 +132,7 @@ def main (argv):
 	#
 
 	# A is used as a temp var for menu selection
+	# B is used as a temp var for menu selection
 	# C and above are available
 	variables = VariableFactory(2)
 
@@ -183,7 +184,13 @@ def main (argv):
 
 		links = []
 
-		def process_command_list(commands):
+		def register_link(cmd, is_conditional):
+			temp_var = variables.new_temp_var() if is_conditional else None
+			links.append((cmd, temp_var))
+			if temp_var:
+				script.write('1' + variables.set_var(temp_var))
+
+		def process_command_list(commands, is_conditional=False):
 			for cmd in commands:
 				if cmd.kind == 'text':
 					text = cmd.text.strip()
@@ -196,12 +203,12 @@ def main (argv):
 						image_list.append(cmd.path)
 					script.write('{0}i\n'.format(image_list.index(cmd.path)))
 				elif cmd.kind == 'link':
-					links.append(cmd)
+					register_link(cmd, is_conditional)
 					out_string(cmd.actual_label())
 				elif cmd.kind == 'list':
 					for lcmd in cmd.children:
 						if lcmd.kind == 'link':
-							links.append(lcmd)
+							register_link(lcmd, is_conditional)
 				elif cmd.kind == 'pause':
 					check_print.pending = True
 					check_print()
@@ -211,7 +218,7 @@ def main (argv):
 				elif cmd.kind == 'if':
 					out_expr(cmd.expr)
 					script.write('[\n')
-					process_command_list(cmd.children)
+					process_command_list(cmd.children, True)
 					script.write(' 0]\n')
 
 		process_command_list(passage.commands)
@@ -222,14 +229,31 @@ def main (argv):
 
 		if links:
 			# Outputs the options separated by line breaks, max 28 chars per line
-			out_string('\n'.join([link.actual_label()[:28] for link in links]))
+			for link, temp_var in links:
+				if temp_var:
+					script.write('{0}['.format(variables.get_var(temp_var)))
+
+				out_string(link.actual_label()[:28] + '\n')
+
+				if temp_var:
+					script.write('0]\n')
+
 			script.write('?A.\n')
 			check_print.in_buffer = 0
 
-			nlink = 0
-			for link in links:
-				script.write('A:{0}=[{1}j]\n'.format(nlink, passage_indexes[link.target]))
-				nlink += 1
+			# Outputs the menu destinations
+			script.write('0B.\n');
+
+			for link, temp_var in links:
+				if temp_var:
+					script.write('{0}['.format(variables.get_var(temp_var)))
+
+				script.write('A:B:=[{0}j]'.format(passage_indexes[link.target]))
+				script.write('B:1+B.\n')
+
+				if temp_var:
+					script.write('0]\n')
+
 		else:
 			# No links? Generates an infinite loop.
 			script.write('1[1]\n')
@@ -258,9 +282,13 @@ class VariableFactory:
 
 	def __init__(self, first_available):
 		self.next_available = first_available
+
 		self.vars = {}
 		self.never_used = []
 		self.never_set = []
+
+		self.next_temp = 0;
+		self.temps = []
 
 	def set_var(self, name):
 		if not name in self.vars:
@@ -281,6 +309,18 @@ class VariableFactory:
 			self.never_used.remove(name)
 
 		return '{0}:'.format(self.vars[name])
+
+	def new_temp_var(self):
+		if self.next_temp >= len(self.temps):
+			self.temps.append('*temp{0}'.format(self.next_temp))
+
+		temp = self.temps[self.next_temp]
+		self.next_temp += 1
+
+		return temp
+
+	def clear_temp_vars(self):
+		self.next_temp = 0
 
 	def _create_var(self, name):
 		self.vars[name] = self._num_to_ref(self.next_available)

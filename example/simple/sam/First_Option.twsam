@@ -2,6 +2,8 @@
 "So, you chose the first option.
 As you can see, links are automatically turned into menus."
 !
-"Go to the end"
+"Go to the end
+"
 ?A.
-A:0=[3j]
+0B.
+A:B:=[3j]B:1+B.
