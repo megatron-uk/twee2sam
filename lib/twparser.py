@@ -257,12 +257,12 @@ class ListCmd(AbstractCmd):
 class AbstractMacro(AbstractCmd):
 	"""Class for macros """
 
-	RE_EXPRESSION = re.compile(r'(true|false|[\w\$])', flags=re.IGNORECASE)
+	RE_EXPRESSION = re.compile(r'(not\s+|\!\s*|)(true|false|[A-Z0-9_\$]+)', flags=re.IGNORECASE)
 
 	def __init__(self, token, children=[]):
-		AbstractCmd.__init__(self, token[1][0], token, children)
 		self.params = token[1][1]
 		self.error = None
+		AbstractCmd.__init__(self, token[1][0], token, children)
 
 	def __repr__(self):
 		return '<cmd {0}{1}>'.format(self.kind, ident_list([self.text]))
@@ -272,16 +272,21 @@ class AbstractMacro(AbstractCmd):
 
 	def _parse_expression(self, expr):
 		expr = expr.strip()
-		if not AbstractMacro.RE_EXPRESSION.match(expr):
+		match = AbstractMacro.RE_EXPRESSION.match(expr)
+		if not match:
 			self.error = 'invalid expression: ' + expr
 			return None
 
-		if expr.lower() == 'true':
-			return True
-		elif expr.lower() == 'false':
-			return False
+		op = 'not' if match.group(1) else ''
+		val = match.group(2)
+		lc_val = val.lower()
+
+		if lc_val == 'true':
+			return (op, True)
+		elif lc_val == 'false':
+			return (op, False)
 		else:
-			return expr
+			return (op, val)
 
 
 

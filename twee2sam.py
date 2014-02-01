@@ -167,12 +167,17 @@ def main (argv):
 			check_print.in_buffer += len(msg)
 
 		def out_expr(expr):
-			if expr is True:
+			op, val = expr
+
+			if val is True:
 				script.write('1')
-			elif expr is False:
+			elif val is False:
 				script.write('0')
 			else:
-				script.write(variables.get_var(cmd.expr))
+				script.write(variables.get_var(val))
+
+			if op == 'not':
+				script.write(' 0=')
 
 		# Outputs all the text
 
@@ -201,15 +206,11 @@ def main (argv):
 					check_print.pending = True
 					check_print()
 				elif cmd.kind == 'set':
-					if cmd.expr is True:
-						script.write('1')
-					elif cmd.expr is False:
-						script.write('0')
-					else:
-						script.write(variables.get_var(cmd.expr))
+					out_expr(cmd.expr)
 					script.write(variables.set_var(cmd.target) + '\n')
 				elif cmd.kind == 'if':
-					script.write(variables.get_var(cmd.expr) + '[\n')
+					out_expr(cmd.expr)
+					script.write('[\n')
 					process_command_list(cmd.children)
 					script.write(' 0]\n')
 

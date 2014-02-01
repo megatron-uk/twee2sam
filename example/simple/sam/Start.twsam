@@ -4,6 +4,9 @@
 C:[
 "Okay, you started!"
  0]
+D: 0=[
+"Okay, no nonexistant variables here!"
+ 0]
 "Let's display an image:"
 !
 4i
