@@ -62,6 +62,10 @@ So, essentially, the tool is currently supporting either single boolean constant
 History
 =======
 
+2014-02-19: Updated SAM to use PS Gaiden compression.
+
+2014-02-17: Corrected word wrapping bug.
+
 2014-02-01: Implemented the &lt;&lt;set&gt;&gt; and &lt;&lt;if&gt;&gt; commands.
 
 2014-01-30: Implemented text buffer overflow checking and also implemented the &lt;&lt;pause&gt;&gt; command.
