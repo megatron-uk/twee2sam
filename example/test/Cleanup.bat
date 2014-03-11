@@ -3,7 +3,7 @@
 del sam\*.twsam
 
 del sam\*.png
-copy sam\blank.png.dup sam\blank.png
+copy sam\*.dup sam\*.
 
 del sam\Script.list.txt
 del sam\output.sms

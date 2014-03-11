@@ -1,4 +1,0 @@
-Start.twsam
-First_Option.twsam
-Second_option.twsam
-The_end.twsam

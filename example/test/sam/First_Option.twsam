@@ -1,9 +1,0 @@
-0i
-"So, you chose the first option.
-As you can see, links are automatically turned into menus."
-!
-"Go to the end
-"
-?A.
-0B.
-A:B:=[3j]B:1+B.
