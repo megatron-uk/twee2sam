@@ -17,6 +17,7 @@ As you can see, links are automatically turned into menus.
 
 
 :: Start
+<<music "system_of_a_master.epsgmod">>
 [img[Hello.png]]
 Hello! This is a "quick-and-dirty" demo of twee2sam.
 <<pause>>

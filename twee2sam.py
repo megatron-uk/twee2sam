@@ -137,6 +137,7 @@ def main (argv):
 	variables = VariableFactory(2)
 
 	image_list = []
+	music_list = []
 	for passage in twp.passages.values():
 		script = open(dest_dir + os.sep + script_name(passage.title), 'w')
 
@@ -220,6 +221,10 @@ def main (argv):
 					script.write('[\n')
 					process_command_list(cmd.children, True)
 					script.write(' 0]\n')
+				elif cmd.kind == 'music':
+					if not cmd.path in music_list:
+						music_list.append(cmd.path)
+					script.write('{0}m\n'.format(music_list.index(cmd.path)))
 
 		process_command_list(passage.commands)
 
@@ -262,19 +267,34 @@ def main (argv):
 
 
 	#
+	# Function to copy the files on a list and generate a list file
+	#
+	def copy_and_build_list(list_file_name, file_list, item_extension, item_suffix = '', empty_item = 'blank'):
+		list_file = open(dest_dir + os.sep + list_file_name, 'w')
+
+		for file_path in file_list:
+			item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
+			list_file.write(item_name + item_suffix + '\n')
+			shutil.copyfile(src_dir + os.sep + file_path, dest_dir + os.sep + item_name + '.' + item_extension)
+
+		if not file_list:
+			list_file.write(empty_item + item_suffix + '\n')
+
+		list_file.close()
+
+
+
+	#
 	# Copy images and builds the image list
 	#
+ 	copy_and_build_list('Images.txt', image_list, 'png')
 
 
-	image_list_file = open(dest_dir + os.sep + 'Images.txt', 'w')
 
-	for image_path in image_list:
-		image_name = name_to_identifier(os.path.splitext(os.path.basename(image_path))[0])
-		image_list_file.write(image_name + '\n');
-		shutil.copyfile(src_dir + os.sep + image_path, dest_dir + os.sep + image_name + '.png')
-
-	image_list_file.write('blank\n');
- 	image_list_file.close()
+	#
+	# Copy music and builds the music list
+	#
+ 	copy_and_build_list('Music.list.txt', music_list, 'epsgmod', '.epsgmod', 'empty')
 
 
 

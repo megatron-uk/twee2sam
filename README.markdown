@@ -46,6 +46,11 @@ Conditionally executes the code between &lt;&lt;if &gt;&gt; and &lt;&lt;endif&gt
 
 Note: &lt;&lt;else&gt;&gt; is not implemented yet.
 
+&lt;&lt;music *"filename.epsgmod"*&gt;&gt;
+---------
+
+Plays a music in *.epsgmod* format, as exported by [Mod2PSG2]
+
 Expressions
 -----------
 
@@ -83,3 +88,4 @@ History
 [twine]: https://github.com/tweecode/twine "A visual tool for creating interactive stories for the Web"
 [SAM]: http://www.haroldo-ok.com/sam-simple-adventure-maker-sms/ "SAM - Simple Adventure Maker"
 [Python]: http://www.python.org/ "Python Programming Language"
+[Mod2PSG2]: http://www.smspower.org/Music/Mod2PSG2 "A tracker for the Sega Master System's sound chip"

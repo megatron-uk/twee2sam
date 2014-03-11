@@ -153,6 +153,8 @@ class Passage:
 			else:
 				self._warning('<<endif>> without <<if>>')
 			macro = EndMacro(token)
+		elif kind == 'music':
+			macro = MusicMacro(token)
 		else:
 			macro = InvalidMacro(token, 'unknown macro: ' + kind)
 
@@ -331,6 +333,14 @@ class IfMacro(AbstractMacro):
 
 class EndMacro(AbstractMacro):
 	"""Class for closing the current macro"""
+
+
+class MusicMacro(AbstractMacro):
+	"""Class for the 'music' macro"""
+
+	def _parse(self, token):
+		kind, params = token[1]
+		self.path = params.replace('"', '').strip()
 
 
 

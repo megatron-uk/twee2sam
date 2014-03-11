@@ -20,7 +20,7 @@ p9
 (dp11
 S'selected'
 p12
-I00
+I01
 sS'pos'
 p13
 (lp14
@@ -34,7 +34,7 @@ p16
 (dp17
 S'text'
 p18
-V[img[Hello.png]]\u000aHello! This is a "quick-and-dirty" demo of twee2sam.\u000a<<pause>>\u000aWhat option will you choose?\u000a* [[I'll choose an option|First Option]]\u000a* [[I'd prefer to choose another|Second option]]
+V<<music "system_of_a_master.epsgmod">>\u000a[img[Hello.png]]\u000aHello! This is a "quick-and-dirty" demo of twee2sam.\u000a<<pause>>\u000aWhat option will you choose?\u000a* [[I'll choose an option|First Option]]\u000a* [[I'd prefer to choose another|Second option]]
 p19
 sS'tags'
 p20
@@ -140,7 +140,7 @@ VSecond option
 p52
 sbsa(dp53
 g12
-I01
+I00
 sg13
 (lp54
 I602
