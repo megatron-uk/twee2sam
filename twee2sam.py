@@ -3,7 +3,7 @@
 import sys, os, getopt, glob, re, shutil
 from operator import itemgetter
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
-sys.path.append(os.sep.join([scriptPath, 'tw', 'lib']))
+sys.path.append(os.sep.join([scriptPath, 'tw']))
 sys.path.append(os.sep.join([scriptPath, 'lib']))
 from tiddlywiki import TiddlyWiki
 from twparser import TwParser
@@ -70,7 +70,7 @@ def main (argv):
 
 	for source in sources:
 		file = open(source)
-		tw.addTwee(file.read())
+		tw.addTwee(file.read().decode('utf-8-sig'))
 		file.close()
 
 	src_dir = os.path.dirname(sources[0])
@@ -99,6 +99,10 @@ def main (argv):
 	process_passage_index.next_seq = 0
 
 	# 'Start' _must_ be the first script
+	if not 'Start' in twp.passages:
+		print 'twee2sam: "Start" passage not found.\n'
+		sys.exit(2)
+
 	process_passage_index(twp.passages['Start'])
 	for passage in twp.passages.values():
 		process_passage_index(passage)
@@ -252,6 +256,10 @@ def main (argv):
 			for link, temp_var in links:
 				if temp_var:
 					script.write('{0}['.format(variables.get_var(temp_var)))
+
+				if not link.target in passage_indexes:
+					# TODO: Create a better exception
+					raise BaseException('Link points to a nonexisting passage: "{0}"'.format(link.target))
 
 				script.write('A:B:=[{0}j]'.format(passage_indexes[link.target]))
 				script.write('B:1+B.\n')
