@@ -7,6 +7,7 @@ Twee2SAM adaptation by Haroldo O. Pinheiro (2014)
 
 
 :: At End Of Road
+[img[img/At End Of Road.png]]
 You are standing at the end of a road before a small brick building.
 <<pause>>
 Around you is a forest.

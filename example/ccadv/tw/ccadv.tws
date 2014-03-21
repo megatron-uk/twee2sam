@@ -1613,7 +1613,7 @@ sg31
 g491
 sbsa(dp493
 g12
-I00
+I01
 sg13
 (lp494
 F325.0
@@ -1624,7 +1624,7 @@ Tiddler
 p495
 (dp496
 g19
-VYou are standing at the end of a road before a small brick building.\u000a<<pause>>\u000aAround you is a forest.\u000aA small stream flows out of the building and down a gully.\u000a* [[Enter building|Inside Building]]\u000a* [[West|At Hill In Road]]\u000a* [[South|In A Valley]]\u000a* [[North|In Forest 1]]\u000a<<if $bottle>><<if !$bottle_has_water>>\u000a* [[Fill bottle with water|Fill Bottle With Water]]\u000a<<endif>><<endif>>
+V[img[img/At End Of Road.png]]\u000aYou are standing at the end of a road before a small brick building.\u000a<<pause>>\u000aAround you is a forest.\u000aA small stream flows out of the building and down a gully.\u000a* [[Enter building|Inside Building]]\u000a* [[West|At Hill In Road]]\u000a* [[South|In A Valley]]\u000a* [[North|In Forest 1]]\u000a<<if $bottle>><<if !$bottle_has_water>>\u000a* [[Fill bottle with water|Fill Bottle With Water]]\u000a<<endif>><<endif>>
 p497
 sg21
 VAt End Of Road
@@ -1633,12 +1633,12 @@ sg23
 g24
 ((I2014
 I3
-I19
-I22
-I16
-I7
-I2
-I78
+I20
+I23
+I50
+I41
+I3
+I79
 I0
 tp499
 (dp500
@@ -1861,7 +1861,7 @@ sg31
 g565
 sbsa(dp567
 g12
-I01
+I00
 sg13
 (lp568
 F1355.0
