@@ -1,1 +1,8 @@
+At_Slit_In_Streambed
+In_Forest_1
 At_End_Of_Road
+At_Hill_In_Road
+In_A_Valley
+Outside_Grate
+blank
+Inside_Building

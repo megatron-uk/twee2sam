@@ -22,6 +22,7 @@ A small stream flows out of the building and down a gully.
 
 
 :: In A Valley
+[img[img/In A Valley.png]]
 You are in a valley in the forest beside a stream tumbling along a rocky bed.
 * [[Back to road|At End Of Road]]
 * [[Enter forest|In Forest 1]]
@@ -29,6 +30,7 @@ You are in a valley in the forest beside a stream tumbling along a rocky bed.
 
 
 :: At Slit In Streambed
+[img[img/At Slit In Streambed.png]]
 At your feet all the water of the stream splashes into a 2-inch slit in the rock.
 Downstream the streambed is bare rock.
 * [[West|In Forest 1]]
@@ -82,6 +84,7 @@ An awkward canyon and a good passage exit from east and west sides of the chambe
 
 
 :: At Hill In Road
+[img[img/At Hill In Road.png]]
 You have walked up a hill, still in the forest.
 The road slopes back down the other side of the hill.
 There is a building in the distance.
@@ -91,6 +94,7 @@ There is a building in the distance.
 
 
 :: Inside Building
+[img[img/Inside Building.png]]
 You are inside a building, a well house for a large spring.
 
 <<pause>>
@@ -127,6 +131,7 @@ You take it with you.
 
 
 :: Below The Grate
+[img[img/blank.png]]
 You are in a small chamber beneath a 3x3 steel grate to the surface.
 A low crawl over cobbles leads inward to the west.
 * [[West|In Cobble Crawl]]
@@ -141,6 +146,7 @@ You are in a maze of twisty little passages, all alike.
 
 
 :: Outside Grate
+[img[img/Outside Grate.png]]
 You are in a 20-foot depression floored with bare dirt.
 Set into the dirt is a strong steel grate mounted in concrete.
 A dry streambed leads into the depression.
@@ -165,6 +171,7 @@ The bottle is now full of water.
 
 
 :: In Forest 1
+[img[img/In Forest 1.png]]
 You are in open forest, with a deep valley to one side.
 * [[West|In Forest 1]]
 * [[East|In A Valley]]
@@ -180,6 +187,7 @@ A west passage ends here except for a small crack leading on.
 Rough stone steps lead down the pit.
 * [[West|At Top Of Small Pit Follow Crack]]
 * [[East|In Bird Chamber]]
+* [[Down|In Hall Of Mists]]
 
 
 :: At Top Of Small Pit Follow Crack
