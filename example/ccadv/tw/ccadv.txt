@@ -41,6 +41,7 @@ Downstream the streambed is bare rock.
 
 
 :: At Brink Of Pit
+[img[img/At Brink Of Pit.png]]
 You are on the brink of a thirty foot pit with a massive orange column down one wall.
 You could climb down here but you could not get back up.
 The maze continues at this level.
@@ -50,6 +51,7 @@ The maze continues at this level.
 
 
 :: In Cobble Crawl
+[img[img/In Cobble Crawl.png]]
 You are crawling over cobbles in a low passage.
 There is a dim light at the east end of the passage.
 * [[West|In Debris Room]]
@@ -57,6 +59,7 @@ There is a dim light at the east end of the passage.
 
 
 :: In Awkward Sloping E W Canyon
+[img[img/In Awkward Sloping E W Canyon.png]]
 You are in an awkward sloping east/west canyon.
 * [[West|In Bird Chamber]]
 * [[East|In Debris Room]]
@@ -65,6 +68,7 @@ You are in an awkward sloping east/west canyon.
 
 
 :: In Debris Room
+[img[img/In Debris Room.png]]
 You are in a debris room filled with stuff washed in from the surface.
 A low wide passage with cobbles becomes plugged with mud and debris here,
 but an awkward canyon leads upward and west.
@@ -76,6 +80,7 @@ A note on the wall says, 'Magic word XYZZY.'
 
 
 :: In Bird Chamber
+[img[img/In Bird Chamber.png]]
 You are in a splendid chamber thirty feet high.
 The walls are frozen rivers of orange stone.
 An awkward canyon and a good passage exit from east and west sides of the chamber.
@@ -131,7 +136,7 @@ You take it with you.
 
 
 :: Below The Grate
-[img[img/blank.png]]
+[img[img/Below The Grate.png]]
 You are in a small chamber beneath a 3x3 steel grate to the surface.
 A low crawl over cobbles leads inward to the west.
 * [[West|In Cobble Crawl]]
@@ -139,6 +144,7 @@ A low crawl over cobbles leads inward to the west.
 
 
 :: Alike Maze 6
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[West|Alike Maze 2]]
 * [[North|At Brink Of Pit]]
@@ -181,6 +187,7 @@ You are in open forest, with a deep valley to one side.
 
 
 :: At Top Of Small Pit
+[img[img/At Top Of Small Pit.png]]
 At your feet is a small pit breathing traces of white mist.
 A west passage ends here except for a small crack leading on.
 
@@ -196,6 +203,7 @@ The crack is far too small for you to follow.
 
 
 :: Alike Maze 2
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[East|Alike Maze 3]]
 * [[Up|Dead End 13]]
@@ -208,6 +216,7 @@ This is the pirate's dead end.
 
 
 :: Alike Maze 5
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[Up|Alike Maze 2]]
 * [[East|At Brink Of Pit]]
@@ -215,6 +224,7 @@ You are in a maze of twisty little passages, all alike.
 
 
 :: Alike Maze 4
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[North|Alike Maze 6]]
 * [[South|Alike Maze 5]]
@@ -227,6 +237,7 @@ It just looks like an ordinary steel grate.
 
 
 :: Alike Maze 3
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[West|Alike Maze 1]]
 * [[South|Alike Maze 5]]
@@ -234,6 +245,7 @@ You are in a maze of twisty little passages, all alike.
 
 
 :: Alike Maze 1
+[img[img/Alike Maze.png]]
 You are in a maze of twisty little passages, all alike.
 * [[Down|Alike Maze 6]]
 * [[Up|At West End Of Hall Of Mists]]
@@ -318,6 +330,7 @@ You are in a little maze of twisting passages, all different.
 
 
 :: At West End Of Hall Of Mists
+[img[img/blank.png]]
 You are at the west end of the hall of mists.
 A low wide crawl continues west and another goes north.
 To the south is a little passage 6 feet off the floor.
@@ -496,6 +509,7 @@ There is precious jewelry here!
 
 
 :: In Hall Of Mists
+[img[img/blank.png]]
 You are at one end of a vast hall stretching forward out of sight to the west.
 There are openings to either side.
 Nearby, a wide stone staircase leads downward.

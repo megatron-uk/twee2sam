@@ -23,7 +23,7 @@
 ;==============================================================
 ; SDSC tag and SMS rom header
 ;==============================================================
-.sdsctag 0.01,"Colossal Cave Adventure S.A.M. Edition","Version 0.01 - Initial version","Haroldo O. Pinheiro"
+.sdsctag 0.02,"Colossal Cave Adventure S.A.M. Edition","Version 0.02 - Some additional images","Haroldo O. Pinheiro"
 
 ;==============================================================
 ; S.A.M. Includes
