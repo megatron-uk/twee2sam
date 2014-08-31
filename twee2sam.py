@@ -229,6 +229,13 @@ def main (argv):
 					if not cmd.path in music_list:
 						music_list.append(cmd.path)
 					script.write('{0}m\n'.format(music_list.index(cmd.path)))
+				elif cmd.kind == 'display':
+					try:
+						target = twp.passages[cmd.target]
+					except KeyError:
+						print >> sys.stderr, "Display macro target passage {0} not found!".format(cmd.target)
+						return
+					process_command_list(target.commands)
 
 		process_command_list(passage.commands)
 
