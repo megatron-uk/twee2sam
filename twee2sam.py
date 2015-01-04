@@ -17,7 +17,7 @@ def main (argv):
 
 	# defaults
 
-	author = 'twee'
+	author = None
 	target = 'jonah'
 	merge = rss_output = ''
 	plugins = []
@@ -44,7 +44,10 @@ def main (argv):
 
 	# construct a TW object
 
-	tw = TiddlyWiki(author)
+	if author:
+		tw = TiddlyWiki(author)
+	else:
+		tw = TiddlyWiki()
 
 	# read in a file to be merged
 
@@ -158,7 +161,7 @@ def main (argv):
 			print 'Warning on {0}: {1}'.format(passage.title, msg)
 
 		def out_string(msg):
-			msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
+                        msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
 			msg_len = len(msg)
 
 			# Checks for buffer overflow
@@ -172,18 +175,52 @@ def main (argv):
 
 			check_print.in_buffer += len(msg)
 
+		def out_set(cmd):
+			# Can be either a straight assign: set a = 1
+			if cmd.set_type is 'assign':
+				out_expr(cmd.expr)
+				target = variables.set_var(cmd.target)
+				script.write(target + '\n')
+			# or can be a math function: set a = b + 1
+			if cmd.set_type is 'math':
+				target = variables.set_var(cmd.target)
+				if cmd.operand_1[0] == '$':
+					script.write(variables.get_var(cmd.operand_1))
+				else:
+					script.write(cmd.operand_1)
+				script.write(' ')
+				if cmd.operand_2[0] == '$':
+					script.write(variables.get_var(cmd.operand_2))
+				else:
+					script.write(cmd.operand_2)
+				script.write(' ')
+				script.write(cmd.operator)
+				script.write(' ')
+				script.write(target + '\n')
+
+		def out_print(cmd):
+			# print a numeric qvariable
+			val = cmd.expr
+			target = variables.get_var(cmd.target)
+			script.write(target)
+			script.write('"\#"')
+		
 		def out_expr(expr):
 			op, val = expr
-
-			if val is True:
-				script.write('1')
-			elif val is False:
-				script.write('0')
+			if (op is '') and (val not in [True, False]) and (val[0] != '$'):
+				intval = int(val)
+				print("Setting literal: %s" % val)
+				script.write(str(intval))
 			else:
-				script.write(variables.get_var(val))
+				if val is True:
+					script.write('1')
+				elif val is False:
+					script.write('0')
+				else:
+					script.write(variables.get_var(val))
 
-			if op == 'not':
-				script.write(' 0=')
+				if op == 'not':
+					script.write(' 0=')
 
 		# Outputs all the text
 
@@ -202,6 +239,8 @@ def main (argv):
 					if text:
 						out_string(text)
 						check_print.pending = True
+                                elif cmd.kind == 'print':
+                                	out_print(cmd)                                	
 				elif cmd.kind == 'image':
 					check_print()
 					if not cmd.path in image_list:
@@ -218,8 +257,7 @@ def main (argv):
 					check_print.pending = True
 					check_print()
 				elif cmd.kind == 'set':
-					out_expr(cmd.expr)
-					script.write(variables.set_var(cmd.target) + '\n')
+					out_set(cmd)
 				elif cmd.kind == 'if':
 					out_expr(cmd.expr)
 					script.write('[\n')
@@ -281,6 +319,7 @@ def main (argv):
 		list_file = open(dest_dir + os.sep + list_file_name, 'w')
 
 		for file_path in file_list:
+			print("Copying file: %s" % file_path)
 			item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
 			list_file.write(item_name + item_suffix + '\n')
 			shutil.copyfile(src_dir + os.sep + file_path, dest_dir + os.sep + item_name + '.' + item_extension)

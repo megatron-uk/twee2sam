@@ -141,8 +141,11 @@ class Passage:
 
 	def _parse_macro(self, token, tokens):
  		kind, params = token[1]
-		if kind == 'set':
+                if kind == 'set':
+                	print("SET: %s" % str(token[1]))
 			macro = SetMacro(token)
+                elif kind == 'print':
+                        macro = PrintMacro(token)
 		elif kind == 'pause':
 			macro = PauseMacro(token)
 		elif kind == 'if':
@@ -260,7 +263,8 @@ class AbstractMacro(AbstractCmd):
 	"""Class for macros """
 
 	RE_EXPRESSION = re.compile(r'(not\s+|\!\s*|)(true|false|[A-Z0-9_\$]+)', flags=re.IGNORECASE)
-
+        RE_PRINT = re.compile(r'(\$[A-Za-z0-9_]+)', flags=re.IGNORECASE)
+        
 	def __init__(self, token, children=[]):
 		self.params = token[1][1]
 		self.error = None
@@ -282,7 +286,6 @@ class AbstractMacro(AbstractCmd):
 		op = 'not' if match.group(1) else ''
 		val = match.group(2)
 		lc_val = val.lower()
-
 		if lc_val == 'true':
 			return (op, True)
 		elif lc_val == 'false':
@@ -290,8 +293,14 @@ class AbstractMacro(AbstractCmd):
 		else:
 			return (op, val)
 
-
-
+	def _parse_print(self, expr):
+		expr = expr.strip()
+		match = AbstractMacro.RE_PRINT.match(expr)
+		if not match:
+			self.error = 'invalid expression: ' + expr
+			return None
+		val = match.group(1)
+		return val
 
 class InvalidMacro(AbstractMacro):
 	"""Class for invalid macros"""
@@ -301,26 +310,100 @@ class InvalidMacro(AbstractMacro):
 		self.kind = 'invalid'
 		self.error = error
 
-
 class SetMacro(AbstractMacro):
 	"""Class for the 'set' macro"""
 
-	RE_ATTRIBUTION = re.compile(r'\s*([\w\$]+)\s*(?:=|\sto\s)\s*(.*)')
+	# Normal set..
+	# set X = 99
+	RE_ATTRIBUTION = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+|true|false)$')
+	
+	# Addition set with literals..
+	# set X = 2 + 1
+	RE_SET_ADDITION_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*(\+)\s*([0-9]+)$')
+	
+	# Subtraction set with literals..
+	# set X = 2 - 1
+	RE_SET_SUBTRACTION_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*(\-)\s*([0-9]+)$')
+
+	# Addition set with one or more variables..
+	# set X = X + 1
+	# set X = A + B
+	RE_SET_ADDITION_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\+)\s*([0-9]+|\$[A-Za-z]+)$')
+
+	# Subtraction set with one or more variables..
+	# set X = X - 1
+	# set X = A - B
+	RE_SET_SUBTRACTION_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\-)\s*([0-9]+|\$[A-Za-z]+)$')
+
 
 	def _parse(self, token):
 		kind, params = token[1]
-		match = SetMacro.RE_ATTRIBUTION.match(params)
-		if not match:
-			self.error = 'invalid "set" expression: ' + params
+		match = SetMacro.RE_ATTRIBUTION.match(params.lstrip().rstrip())
+		if match:
+			print("SetMacro: Normal set")
+			self.target = match.group(1)
+			self.set_type = 'assign'
+			self.expr = self._parse_expression(match.group(2))
+			return
+		
+		match = SetMacro.RE_SET_ADDITION_1.match(params.lstrip().rstrip())
+		if match:
+			print("SetMacro: Addition with literals")
+			self.target = match.group(1)
+			self.set_type = 'math'
+			self.operator = match.group(3)
+			self.operand_1 = match.group(2)
+			self.operand_2 = match.group(4)
+			self.expr = self._parse_expression(match.group(2))
+			return
+		
+		match = SetMacro.RE_SET_ADDITION_2.match(params.lstrip().rstrip())
+		if match:
+			print("SetMacro: Addition with variables")
+			self.target = match.group(1)
+			self.set_type = 'math'
+			self.operator = match.group(3)
+			self.operand_1 = match.group(2)
+			self.operand_2 = match.group(4)
+			self.expr = self._parse_expression(match.group(2))
 			return
 
-		self.target = match.group(1)
-		self.expr = self._parse_expression(match.group(2))
+		match = SetMacro.RE_SET_SUBTRACTION_1.match(params.lstrip().rstrip())
+		if match:
+			print("SetMacro: Subtraction with literals")
+			self.target = match.group(1)
+			self.set_type = 'math'
+			self.operator = match.group(3)
+			self.operand_1 = match.group(2)
+			self.operand_2 = match.group(4)
+			self.expr = self._parse_expression(match.group(2))
+			return
 
+		match = SetMacro.RE_SET_SUBTRACTION_2.match(params.lstrip().rstrip())
+		if match:
+			print("SetMacro: Subtraction with variables")
+			self.target = match.group(1)
+			self.set_type = 'math'
+			self.operand_1 = match.group(2)
+			self.operand_2 = match.group(4)
+			self.operator = match.group(3)
+			return
+
+		self.error = 'invalid "set" expression: ' + params
+		return
+		
+		
 
 class PauseMacro(AbstractMacro):
 	"""Class for the 'pause' macro"""
 
+class PrintMacro(AbstractMacro):
+	"""Class for a 'print' macro which displays the value of a variable"""
+	
+	def _parse(self, token):
+		kind, params = token[1]
+		self.expr = self._parse_print(params.lstrip())
+		self.target = self.expr
 
 class IfMacro(AbstractMacro):
 	"""Class for the 'if' macro"""
@@ -334,17 +417,12 @@ class IfMacro(AbstractMacro):
 class EndMacro(AbstractMacro):
 	"""Class for closing the current macro"""
 
-
 class MusicMacro(AbstractMacro):
 	"""Class for the 'music' macro"""
 
 	def _parse(self, token):
 		kind, params = token[1]
 		self.path = params.replace('"', '').strip()
-
-
-
-
 
 def ident_list(list):
 	parts = []
