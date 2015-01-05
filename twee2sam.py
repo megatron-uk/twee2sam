@@ -23,16 +23,13 @@ def main (argv):
 
 	# construct a TW object
 
-	print type(opts.author)
-	print opts.author
-	tw = TiddlyWiki('aaaaa')
+	tw = TiddlyWiki(opts.author)
 
 	# read in a file to be merged
 
 	if opts.merge:
-		file = open(opts.merge)
-		tw.addHtml(file.read())
-		file.close()
+		with open(opts.merge) as f:
+			tw.addHtml(f.read())
 
 	# read source files
 
@@ -43,9 +40,8 @@ def main (argv):
 		sys.exit(2)
 
 	for source in sources:
-		file = open(source)
-		tw.addTwee(file.read().decode('utf-8-sig'))
-		file.close()
+		with open(source) as f:
+			tw.addTwee(f.read().decode('utf-8-sig'))
 
 	src_dir = os.path.dirname(sources[0])
 
@@ -94,14 +90,11 @@ def main (argv):
 	def script_name(s):
 		return name_to_identifier(s) + '.twsam'
 
-	f_list = open(opts.destination + os.sep + 'Script.list.txt', 'w')
-
-	for passage_name in passage_order:
- 		passage = twp.passages[passage_name]
-		f_list.write(script_name(passage.title))
-		f_list.write('\n')
-
-	f_list.close()
+	with open(opts.destination + os.sep + 'Script.list.txt', 'w') as f_list:
+		for passage_name in passage_order:
+	 		passage = twp.passages[passage_name]
+			f_list.write(script_name(passage.title))
+			f_list.write('\n')
 
 
 	#
@@ -307,18 +300,14 @@ def main (argv):
 	# Function to copy the files on a list and generate a list file
 	#
 	def copy_and_build_list(list_file_name, file_list, item_extension, item_suffix = '', empty_item = 'blank'):
-		list_file = open(opts.destination + os.sep + list_file_name, 'w')
+		with open(opts.destination + os.sep + list_file_name, 'w') as list_file:
+			for file_path in file_list:
+				item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
+				list_file.write(item_name + item_suffix + '\n')
+				shutil.copyfile(src_dir + os.sep + file_path, opts.destination + os.sep + item_name + '.' + item_extension)
 
-		for file_path in file_list:
-			print("Copying file: %s" % file_path)
-			item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
-			list_file.write(item_name + item_suffix + '\n')
-			shutil.copyfile(src_dir + os.sep + file_path, opts.destination + os.sep + item_name + '.' + item_extension)
-
-		if not file_list:
-			list_file.write(empty_item + item_suffix + '\n')
-
-		list_file.close()
+			if not file_list:
+				list_file.write(empty_item + item_suffix + '\n')
 
 
 

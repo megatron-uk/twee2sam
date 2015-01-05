@@ -1,0 +1,23 @@
+1i
+"So, you prefer the second option?"
+!
+2i
+"As you can see, the system supports images, though you'll have to properly convert them to the SMS pallete in order for them to work."
+D: 0=[
+!
+"By the way, I'll not allow you to go to the end until you see the other option too. :P"
+ 0]
+1 C.
+D:[
+1F. 0]
+!
+F:["Go to the end.
+"
+0]
+"Back to the beginning.
+"
+?A.
+0B.
+F:[A:B:=[3j]B:1+B.
+0]
+A:B:=[0j]B:1+B.
