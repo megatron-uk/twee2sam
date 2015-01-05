@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, getopt, glob, re, shutil
+import argparse, sys, os, glob, re, shutil
 from operator import itemgetter
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
 sys.path.append(os.sep.join([scriptPath, 'tw']))
@@ -9,66 +9,35 @@ from tiddlywiki import TiddlyWiki
 from twparser import TwParser
 
 
-def usage():
-	print 'usage: twee2sam sourcefile destdir'
-
-
 def main (argv):
 
-	# defaults
-
-	author = None
-	target = 'jonah'
-	merge = rss_output = ''
-	plugins = []
-
-	# read command line switches
-
-	try:
-		opts, args = getopt.getopt(argv, 'a:m:p:r:t:', ['author=', 'merge=', 'plugins=', 'rss=', 'target='])
-	except getopt.GetoptError:
-		usage()
-		sys.exit(2)
-
-	for opt, arg in opts:
-		if (opt in ('-a', '--author')):
-			author = arg
-		elif (opt in ('-m', '--merge')):
-			merge = arg
-		elif (opt in ('-p', '--plugins')):
-			plugins = arg.split(',')
-		elif (opt in ('-r', '--rss')):
-			rss_output = arg
-		elif (opt in ('-t', '--target')):
-			target = arg
+	parser = argparse.ArgumentParser(description="Convert twee source code into SAM source code")
+	parser.add_argument("-a", "--author", default="twee")
+	parser.add_argument("-m", "--merge", default="")
+	parser.add_argument("-p", "--plugins", nargs="*", default=[])
+	parser.add_argument("-r", "--rss", default="")
+	parser.add_argument("-t", "--target", default="jonah")
+	parser.add_argument("sources")
+	parser.add_argument("destination")
+	opts = parser.parse_args()
 
 	# construct a TW object
 
-	if author:
-		tw = TiddlyWiki(author)
-	else:
-		tw = TiddlyWiki()
+	tw = TiddlyWiki(opts.author)
 
 	# read in a file to be merged
 
-	if merge != '':
-		file = open(merge)
+	if opts.merge:
+		file = open(opts.merge)
 		tw.addHtml(file.read())
 		file.close()
 
 	# read source files
 
-	sources = []
+	sources = glob.glob(opts.sources)
 
-	for file in glob.glob(args[0]):
-		sources.append(file)
-
-	if len(sources) == 0:
+	if not len(sources):
 		print 'twee2sam: no source files specified\n'
-		sys.exit(2)
-
-	if len(args) < 2:
-		print 'twee2sam: no destination directory specified\n'
 		sys.exit(2)
 
 	for source in sources:
@@ -77,7 +46,6 @@ def main (argv):
 		file.close()
 
 	src_dir = os.path.dirname(sources[0])
-	dest_dir = args[1]
 
 	#
 	# Parse the file
@@ -124,7 +92,7 @@ def main (argv):
 	def script_name(s):
 		return name_to_identifier(s) + '.twsam'
 
-	f_list = open(dest_dir + os.sep + 'Script.list.txt', 'w')
+	f_list = open(opts.destination + os.sep + 'Script.list.txt', 'w')
 
 	for passage_name in passage_order:
  		passage = twp.passages[passage_name]
@@ -146,7 +114,7 @@ def main (argv):
 	image_list = []
 	music_list = []
 	for passage in twp.passages.values():
-		script = open(dest_dir + os.sep + script_name(passage.title), 'w')
+		script = open(opts.destination + os.sep + script_name(passage.title), 'w')
 
 		def check_print():
 			if check_print.pending:
@@ -337,13 +305,13 @@ def main (argv):
 	# Function to copy the files on a list and generate a list file
 	#
 	def copy_and_build_list(list_file_name, file_list, item_extension, item_suffix = '', empty_item = 'blank'):
-		list_file = open(dest_dir + os.sep + list_file_name, 'w')
+		list_file = open(opts.destination + os.sep + list_file_name, 'w')
 
 		for file_path in file_list:
 			print("Copying file: %s" % file_path)
 			item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
 			list_file.write(item_name + item_suffix + '\n')
-			shutil.copyfile(src_dir + os.sep + file_path, dest_dir + os.sep + item_name + '.' + item_extension)
+			shutil.copyfile(src_dir + os.sep + file_path, opts.destination + os.sep + item_name + '.' + item_extension)
 
 		if not file_list:
 			list_file.write(empty_item + item_suffix + '\n')
@@ -421,5 +389,5 @@ class VariableFactory:
 
 
 if __name__ == '__main__':
-	main(sys.argv[1:])
+	main(sys.argv)
 
