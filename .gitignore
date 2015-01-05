@@ -1,3 +1,4 @@
 
 tw/lib/*.pyc
 lib/*.pyc
+/bin/*
