@@ -179,6 +179,7 @@ def main (argv):
 			# Can be either a straight assign: set a = 1
 			if cmd.set_type is 'assign':
 				out_expr(cmd.expr)
+                                script.write(' ')
 				target = variables.set_var(cmd.target)
 				script.write(target + '\n')
 			# or can be a math function: set a = b + 1
