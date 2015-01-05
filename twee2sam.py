@@ -76,11 +76,9 @@ def main (argv):
 	for passage in twp.passages.values():
 		process_passage_index(passage)
 
-
 	#
 	# Generate the file list
 	#
-
 	passage_order = [psg for psg, idx in sorted(passage_indexes.items(), key=itemgetter(1))]
 
 
@@ -197,7 +195,6 @@ def main (argv):
 				op, val = expr
 				if (op is '') and (val not in [True, False]) and (val[0] != '$'):
 					intval = int(val)
-					print("Setting literal: %s" % val)
 					script.write(str(intval))
 				else:
 					if val is True:
@@ -209,6 +206,16 @@ def main (argv):
 
 					if op == 'not':
 						script.write(' 0=')
+
+					def out_call(cmd):
+						call_target = None
+						for k in passage_indexes.keys():
+							if cmd.target == k:
+								call_target = passage_indexes[k]
+						if call_target:
+							script.write(str(call_target))
+							script.write('c')
+							script.write('\n')
 
 			# Outputs all the text
 
@@ -248,6 +255,10 @@ def main (argv):
 						out_set(cmd)
 					elif cmd.kind == 'if':
 						out_if(cmd)
+					elif cmd.kind == 'call':
+						out_call(cmd)
+					elif cmd.kind == 'return':
+						script.write('$\n')
 					elif cmd.kind == 'music':
 						if not cmd.path in music_list:
 							music_list.append(cmd.path)
