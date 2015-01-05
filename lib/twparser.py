@@ -157,6 +157,8 @@ class Passage:
 			macro = EndMacro(token)
 		elif kind == 'music':
 			macro = MusicMacro(token)
+		elif kind == 'display':
+			macro = DisplayMacro(token)
 		else:
 			macro = InvalidMacro(token, 'unknown macro: ' + kind)
 
@@ -372,6 +374,17 @@ class PrintMacro(AbstractMacro):
 		kind, params = token[1]
 		self.expr = self._parse_print(params.lstrip())
 		self.target = self.expr
+
+class DisplayMacro(AbstractMacro):
+	"""Class for the 'display' macro"""
+
+	def _parse(self, token):
+		kind, params = token[1]
+		self.target = params.replace('"', '').strip()
+
+	def __repr__(self):
+		return "<cmd display: {0}>".format(self.target)
+
 
 class IfMacro(AbstractMacro):
 	"""Class for the 'if' macro"""
