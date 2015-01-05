@@ -39,17 +39,46 @@ Forces a page break or, if there's no text, just waits for the user to press any
 
 Sets the value of a variable to the value of the expression.
 
+Examples:
+
+&lt;&lt;set *variable1* = 42 &gt;&gt;
+
+&lt;&lt;set *variable1* = *variable2* &gt;&gt;
+
+&lt;&lt;set *variable1* = 42 - 24 &gt;&gt;
+
+&lt;&lt;set *variable1* = *variable1* + *variable2* &gt;&gt;
+
+In general terms, the basic Twine math operations (+, -, /, * ) are supported in the form:
+
+target = operand1 operator operand2
+
+Either or both of the operands can be variables. Compound operations (in parenthesis) are not supported.
+
+&lt;&lt;print *variable* &gt;&gt;
+---------
+
+Outputs the value of the given variable in a text passage.
+
 &lt;&lt;if *expression*&gt;&gt;...&lt;&lt;endif&gt;&gt;
 ---------
 
 Conditionally executes the code between &lt;&lt;if &gt;&gt; and &lt;&lt;endif&gt;&gt; if the *expression* evaluates to *true*.
+
+Examples:
+
+&lt;&lt;if *variable1* is True &gt;&gt;...&lt;&lt;endif&gt;&gt;
+
+&lt;&lt;if *variable1* gt 99 &gt;&gt;...&lt;&lt;endif&gt;&gt;
+
+&lt;&lt;if *variable1* lt *variable2* &gt;&gt;...&lt;&lt;endif&gt;&gt;
 
 Note: &lt;&lt;else&gt;&gt; is not implemented yet.
 
 &lt;&lt;music *"filename.epsgmod"*&gt;&gt;
 ---------
 
-Plays a music in *.epsgmod* format, as exported by [Mod2PSG2]
+Plays music in *.epsgmod* format, as exported by [Mod2PSG2]
 
 Expressions
 -----------
@@ -60,12 +89,17 @@ Currently, twee2sam has only limited expression support:
 - **false** evaluates to false;
 - ***variable name*** evaluates to the current value of the variable;
 - **not** ***variable_name*** or ***!variable_name*** evaluates to the logical negation of the current value of the variable; that is, if 'variable' is true, '!variable' is false, and vice versa.
+- **gt** evaluates to true if the left side (target) is greater than the right. Note: **not** is not supported with this operator.
+- **lt** evaluates to true if the left side (target) is less than the right. Note: **not** is not supported with this operator.
 
-So, essentially, the tool is currently supporting either single boolean constants or single variables, with or without negation. Future versions will support more complex expressions.
+So, essentially, the tool currently supports single boolean constants or single variables, with or without negation and less than (lt) or greater than (gt) and equivalence (=) comparisons. Future versions will support more complex expressions.
 
+Note that all variables are referenced with a leading $, as per normal Twine syntax.
 
 History
 =======
+
+2015-01-04: Added print, basic math functions and gt, and lt operators. Added external tiddlywiki source files.
 
 2014-02-19: Updated SAM to use PS Gaiden compression.
 
