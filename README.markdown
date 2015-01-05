@@ -75,6 +75,23 @@ Examples:
 
 Note: &lt;&lt;else&gt;&gt; is not implemented yet.
 
+&lt;&lt;call *passage* &gt;&gt;
+---------
+
+Calls a passage of text - this is effectively how twee2sam converts the Twine passages into a link story, however it can also be used to call out to specific subroutines.
+
+Examples:
+
+&lt;&lt;call inventory_passage &gt;&gt;
+
+A *call* is most often used to jump to another text passage, once you have finished with the 'subroutine' passage, you can return back to the original position with the *return* command:
+
+Example:
+
+&lt;&lt;return&gt;&gt;
+
+The two above commands allow you to have 'subroutines' unconnected from your main Twine story which can be called from anywhere without using the traditional [[link]] syntax and then return back to the previous position - this would normally require the subroutine to know which passage to return back to, which does not work easily with subroutines that may be called from many different locations (high score screens, inventory/player status, a pause menu etc).
+
 &lt;&lt;music *"filename.epsgmod"*&gt;&gt;
 ---------
 

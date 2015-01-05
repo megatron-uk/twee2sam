@@ -149,6 +149,10 @@ class Passage:
 			macro = PauseMacro(token)
 		elif kind == 'if':
 			macro = self._parse_if(token, tokens)
+                elif kind == 'call':
+                        macro = CallMacro(token)
+                elif kind == 'return':
+                        macro = ReturnMacro(token)
 		elif kind == 'endif':
 			if self._block_stack and self._block_stack[-1].kind == 'if':
 				self._block_stack.pop()
@@ -175,9 +179,6 @@ class Passage:
 	def _warning(self, msg):
 		print 'Warning on {0}: {1}'.format(self.title, msg)
 
-
-
-
 class AbstractCmd:
 	"""Base class for the different kinds of commands"""
 
@@ -188,7 +189,6 @@ class AbstractCmd:
 
 	def __repr__(self):
 		return '<cmd {0}>'.format(self.kind)
-
 
 class TextCmd(AbstractCmd):
 	"""Class for text commands"""
@@ -254,9 +254,6 @@ class ListCmd(AbstractCmd):
 
 	def _parse(self, token):
 		self.ordered = token[0] != 'ul'
-
-
-
 
 class AbstractMacro(AbstractCmd):
 	"""Class for macros """
@@ -360,8 +357,6 @@ class SetMacro(AbstractMacro):
 		self.error = 'invalid "set" expression: ' + params
 		return
 		
-		
-
 class PauseMacro(AbstractMacro):
 	"""Class for the 'pause' macro"""
 
@@ -372,6 +367,30 @@ class PrintMacro(AbstractMacro):
 		kind, params = token[1]
 		self.expr = self._parse_print(params.lstrip())
 		self.target = self.expr
+
+class CallMacro(AbstractMacro):
+        """Class for a jump/call subroutine macro"""
+
+        RE_CALL = re.compile(r'\s*([A-Za-z0-9_]+)\s*$')
+
+        def _parse(self, token):
+		
+		kind, params = token[1]
+		
+		match = CallMacro.RE_CALL.match(params.lstrip().rstrip())
+		if match:
+			print("CallMacro: Call subroutine %s %s" % (kind, params))
+			self.target = match.group(1)
+			self.expr = self.target
+			return
+
+class ReturnMacro(AbstractMacro):
+        """Class for a return-from-subroutine macro"""
+
+        def _parse(self, token):
+        	print("ReturnMacro: Return from subroutine")
+		self.expr = True
+		return
 
 class IfMacro(AbstractMacro):
 	"""Class for the 'if' macro"""
