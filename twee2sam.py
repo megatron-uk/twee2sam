@@ -111,195 +111,195 @@ def main (argv):
 	for passage in twp.passages.values():
 		with open(opts.destination + os.sep + script_name(passage.title), 'w') as script:
 
-			def check_print():
-				if check_print.pending:
-					script.write('!\n')
-					check_print.in_buffer = 0
-					check_print.pending = False
+		def check_print():
+			if check_print.pending:
+				script.write('!\n')
+				check_print.in_buffer = 0
+				check_print.pending = False
 
-			check_print.pending = False
+		check_print.pending = False
+		check_print.in_buffer = 0
+
+		def warning(msg):
+			print 'Warning on {0}: {1}'.format(passage.title, msg)
+
+		def out_string(msg):
+			msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
+			msg_len = len(msg)
+
+			# Checks for buffer overflow
+			if check_print.in_buffer + msg_len > 511:
+				warning("The text exceeds the maximum buffer size; try to intersperse the text with some <<pause>> macros")
+				remaining = max(0, 511 - check_print.in_buffer)
+				msg = msg[:remaining]
+
+			script.write('"{0}"'.format(msg))
+			script.write('\n')
+
+			check_print.in_buffer += len(msg)
+
+		def out_set(cmd):
+			# Can be either a straight assign: set a = 1
+			if cmd.set_type is 'assign':
+				out_expr(cmd.expr)
+				script.write(' ')
+				target = variables.set_var(cmd.target)
+				script.write(target + '\n')
+			# or can be a math function: set a = b + 1
+			if cmd.set_type is 'math':
+				target = variables.set_var(cmd.target)
+				if cmd.operand_1[0] == '$':
+					script.write(variables.get_var(cmd.operand_1))
+				else:
+					script.write(cmd.operand_1)
+				script.write(' ')
+				if cmd.operand_2[0] == '$':
+					script.write(variables.get_var(cmd.operand_2))
+				else:
+					script.write(cmd.operand_2)
+				script.write(' ')
+				script.write(cmd.operator)
+				script.write(' ')
+				script.write(target + '\n')
+
+		def out_if(cmd):
+			# is the if a simple boolean?
+			if cmd.if_type is 'boolean':
+				out_expr(cmd.expr)
+				script.write('[\n')
+				process_command_list(cmd.children, True)
+				script.write(' 0]\n')
+
+			# is the if a comparison between variables/literals?
+			if cmd.if_type is 'comparison':
+				script.write(variables.get_var(cmd.target))
+				script.write(' ')
+				if cmd.operand[0] == '$':
+					script.write(variables.get_var(cmd.operand))
+				else:
+					script.write(cmd.operand)
+				script.write(' ')
+				script.write(cmd.operator)
+				script.write(' ')
+				script.write('[\n')
+				process_command_list(cmd.children, True)
+				script.write(' 0]\n')
+			
+
+		def out_print(cmd):
+			# print a numeric qvariable
+			val = cmd.expr
+			target = variables.get_var(cmd.target)
+			script.write(target)
+			script.write('"\#"')
+		
+		def out_expr(expr):
+			op, val = expr
+			if (op is '') and (val not in [True, False]) and (val[0] != '$'):
+				intval = int(val)
+				print("Setting literal: %s" % val)
+				script.write(str(intval))
+			else:
+				if val is True:
+					script.write('1')
+				elif val is False:
+					script.write('0')
+				else:
+					script.write(variables.get_var(val))
+
+				if op == 'not':
+					script.write(' 0=')
+
+		# Outputs all the text
+
+		links = []
+
+		def register_link(cmd, is_conditional):
+			temp_var = variables.new_temp_var() if is_conditional else None
+			links.append((cmd, temp_var))
+			if temp_var:
+				script.write('1' + variables.set_var(temp_var))
+
+		def process_command_list(commands, is_conditional=False):
+			for cmd in commands:
+				if cmd.kind == 'text':
+					text = cmd.text.strip()
+					if text:
+						out_string(text)
+						check_print.pending = True
+				elif cmd.kind == 'print':
+					out_print(cmd)                                	
+				elif cmd.kind == 'image':
+					check_print()
+					if not cmd.path in image_list:
+						image_list.append(cmd.path)
+					script.write('{0}i\n'.format(image_list.index(cmd.path)))
+				elif cmd.kind == 'link':
+					register_link(cmd, is_conditional)
+					out_string(cmd.actual_label())
+				elif cmd.kind == 'list':
+					for lcmd in cmd.children:
+						if lcmd.kind == 'link':
+							register_link(lcmd, is_conditional)
+				elif cmd.kind == 'pause':
+					check_print.pending = True
+					check_print()
+				elif cmd.kind == 'set':
+					out_set(cmd)
+				elif cmd.kind == 'if':
+					out_if(cmd)
+				elif cmd.kind == 'music':
+					if not cmd.path in music_list:
+						music_list.append(cmd.path)
+					script.write('{0}m\n'.format(music_list.index(cmd.path)))
+				elif cmd.kind == 'display':
+					try:
+						target = twp.passages[cmd.target]
+					except KeyError:
+						print >> sys.stderr, "Display macro target passage {0} not found!".format(cmd.target)
+						return
+					process_command_list(target.commands)
+
+		process_command_list(passage.commands)
+
+		check_print()
+
+		# Builds the menu from the links
+
+		if links:
+			# Outputs the options separated by line breaks, max 28 chars per line
+			for link, temp_var in links:
+				if temp_var:
+					script.write('{0}['.format(variables.get_var(temp_var)))
+
+				out_string(link.actual_label()[:28] + '\n')
+
+				if temp_var:
+					script.write('0]\n')
+
+			script.write('?A.\n')
 			check_print.in_buffer = 0
 
-			def warning(msg):
-				print 'Warning on {0}: {1}'.format(passage.title, msg)
+			# Outputs the menu destinations
+			script.write('0B.\n');
 
-			def out_string(msg):
-				msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
-				msg_len = len(msg)
-
-				# Checks for buffer overflow
-				if check_print.in_buffer + msg_len > 511:
-					warning("The text exceeds the maximum buffer size; try to intersperse the text with some <<pause>> macros")
-					remaining = max(0, 511 - check_print.in_buffer)
-					msg = msg[:remaining]
-
-				script.write('"{0}"'.format(msg))
-				script.write('\n')
-
-				check_print.in_buffer += len(msg)
-
-			def out_set(cmd):
-				# Can be either a straight assign: set a = 1
-				if cmd.set_type is 'assign':
-					out_expr(cmd.expr)
-					script.write(' ')
-					target = variables.set_var(cmd.target)
-					script.write(target + '\n')
-				# or can be a math function: set a = b + 1
-				if cmd.set_type is 'math':
-					target = variables.set_var(cmd.target)
-					if cmd.operand_1[0] == '$':
-						script.write(variables.get_var(cmd.operand_1))
-					else:
-						script.write(cmd.operand_1)
-					script.write(' ')
-					if cmd.operand_2[0] == '$':
-						script.write(variables.get_var(cmd.operand_2))
-					else:
-						script.write(cmd.operand_2)
-					script.write(' ')
-					script.write(cmd.operator)
-					script.write(' ')
-					script.write(target + '\n')
-
-			def out_if(cmd):
-				# is the if a simple boolean?
-				if cmd.if_type is 'boolean':
-					out_expr(cmd.expr)
-					script.write('[\n')
-					process_command_list(cmd.children, True)
-					script.write(' 0]\n')
-
-				# is the if a comparison between variables/literals?
-				if cmd.if_type is 'comparison':
-					script.write(variables.get_var(cmd.target))
-					script.write(' ')
-					if cmd.operand[0] == '$':
-						script.write(variables.get_var(cmd.operand))
-					else:
-						script.write(cmd.operand)
-					script.write(' ')
-					script.write(cmd.operator)
-					script.write(' ')
-					script.write('[\n')
-					process_command_list(cmd.children, True)
-					script.write(' 0]\n')
-				
-
-			def out_print(cmd):
-				# print a numeric qvariable
-				val = cmd.expr
-				target = variables.get_var(cmd.target)
-				script.write(target)
-				script.write('"\#"')
-			
-			def out_expr(expr):
-				op, val = expr
-				if (op is '') and (val not in [True, False]) and (val[0] != '$'):
-					intval = int(val)
-					print("Setting literal: %s" % val)
-					script.write(str(intval))
-				else:
-					if val is True:
-						script.write('1')
-					elif val is False:
-						script.write('0')
-					else:
-						script.write(variables.get_var(val))
-
-					if op == 'not':
-						script.write(' 0=')
-
-			# Outputs all the text
-
-			links = []
-
-			def register_link(cmd, is_conditional):
-				temp_var = variables.new_temp_var() if is_conditional else None
-				links.append((cmd, temp_var))
+			for link, temp_var in links:
 				if temp_var:
-					script.write('1' + variables.set_var(temp_var))
+					script.write('{0}['.format(variables.get_var(temp_var)))
 
-			def process_command_list(commands, is_conditional=False):
-				for cmd in commands:
-					if cmd.kind == 'text':
-						text = cmd.text.strip()
-						if text:
-							out_string(text)
-							check_print.pending = True
-					elif cmd.kind == 'print':
-						out_print(cmd)                                	
-					elif cmd.kind == 'image':
-						check_print()
-						if not cmd.path in image_list:
-							image_list.append(cmd.path)
-						script.write('{0}i\n'.format(image_list.index(cmd.path)))
-					elif cmd.kind == 'link':
-						register_link(cmd, is_conditional)
-						out_string(cmd.actual_label())
-					elif cmd.kind == 'list':
-						for lcmd in cmd.children:
-							if lcmd.kind == 'link':
-								register_link(lcmd, is_conditional)
-					elif cmd.kind == 'pause':
-						check_print.pending = True
-						check_print()
-					elif cmd.kind == 'set':
-						out_set(cmd)
-					elif cmd.kind == 'if':
-						out_if(cmd)
-					elif cmd.kind == 'music':
-						if not cmd.path in music_list:
-							music_list.append(cmd.path)
-						script.write('{0}m\n'.format(music_list.index(cmd.path)))
-					elif cmd.kind == 'display':
-						try:
-							target = twp.passages[cmd.target]
-						except KeyError:
-							print >> sys.stderr, "Display macro target passage {0} not found!".format(cmd.target)
-							return
-						process_command_list(target.commands)
+				if not link.target in passage_indexes:
+					# TODO: Create a better exception
+					raise BaseException('Link points to a nonexisting passage: "{0}"'.format(link.target))
 
-			process_command_list(passage.commands)
+				script.write('A:B:=[{0}j]'.format(passage_indexes[link.target]))
+				script.write('B:1+B.\n')
 
-			check_print()
+				if temp_var:
+					script.write('0]\n')
 
-			# Builds the menu from the links
-
-			if links:
-				# Outputs the options separated by line breaks, max 28 chars per line
-				for link, temp_var in links:
-					if temp_var:
-						script.write('{0}['.format(variables.get_var(temp_var)))
-
-					out_string(link.actual_label()[:28] + '\n')
-
-					if temp_var:
-						script.write('0]\n')
-
-				script.write('?A.\n')
-				check_print.in_buffer = 0
-
-				# Outputs the menu destinations
-				script.write('0B.\n');
-
-				for link, temp_var in links:
-					if temp_var:
-						script.write('{0}['.format(variables.get_var(temp_var)))
-
-					if not link.target in passage_indexes:
-						# TODO: Create a better exception
-						raise BaseException('Link points to a nonexisting passage: "{0}"'.format(link.target))
-
-					script.write('A:B:=[{0}j]'.format(passage_indexes[link.target]))
-					script.write('B:1+B.\n')
-
-					if temp_var:
-						script.write('0]\n')
-
-			else:
-				# No links? Generates an infinite loop.
-				script.write('1[1]\n')
+		else:
+			# No links? Generates an infinite loop.
+			script.write('1[1]\n')
 
 
 
