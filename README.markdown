@@ -11,7 +11,7 @@ You can see a working example at example/simple; run Compile.bat to make it run.
 Compiled version
 ----------------
 
-You can get a compiled version from https://dl.dropboxusercontent.com/u/1235428/sms/twee2sam-2014-02-01a.rar
+You can get a compiled version from https://dl.dropboxusercontent.com/u/1235428/sms/twee2sam-2015-01-05a.rar
 
 Of from the [SMSPower thread](http://www.smspower.org/forums/viewtopic.php?t=14568)
 
