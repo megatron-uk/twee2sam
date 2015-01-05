@@ -198,6 +198,29 @@ def main (argv):
 				script.write(' ')
 				script.write(target + '\n')
 
+		def out_if(cmd):
+			# is the if a simple boolean?
+			if cmd.if_type is 'boolean':
+				out_expr(cmd.expr)
+				script.write('[\n')
+				process_command_list(cmd.children, True)
+				script.write(' 0]\n')
+			# is the if a comparison between variables/literals?
+			if cmd.if_type is 'comparison':
+				script.write(variables.get_var(cmd.target))
+				script.write(' ')
+				if cmd.operand[0] == '$':
+					script.write(variables.get_var(cmd.operand))
+				else:
+					script.write(cmd.operand)
+				script.write(' ')
+				script.write(cmd.operator)
+				script.write(' ')
+				script.write('[\n')
+				process_command_list(cmd.children, True)
+				script.write(' 0]\n')
+			
+
 		def out_print(cmd):
 			# print a numeric qvariable
 			val = cmd.expr
@@ -259,10 +282,7 @@ def main (argv):
 				elif cmd.kind == 'set':
 					out_set(cmd)
 				elif cmd.kind == 'if':
-					out_expr(cmd.expr)
-					script.write('[\n')
-					process_command_list(cmd.children, True)
-					script.write(' 0]\n')
+					out_if(cmd)
 				elif cmd.kind == 'music':
 					if not cmd.path in music_list:
 						music_list.append(cmd.path)

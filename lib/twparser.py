@@ -142,7 +142,6 @@ class Passage:
 	def _parse_macro(self, token, tokens):
  		kind, params = token[1]
                 if kind == 'set':
-                	print("SET: %s" % str(token[1]))
 			macro = SetMacro(token)
                 elif kind == 'print':
                         macro = PrintMacro(token)
@@ -317,24 +316,14 @@ class SetMacro(AbstractMacro):
 	# set X = 99
 	RE_ATTRIBUTION = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+|true|false)$')
 	
-	# Addition set with literals..
+	# with literals..
 	# set X = 2 + 1
-	RE_SET_ADDITION_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*(\+)\s*([0-9]+)$')
+	RE_SET_ADDSUBMUL_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*([\+\-\/\*])\s*([0-9]+)$')
 	
-	# Subtraction set with literals..
-	# set X = 2 - 1
-	RE_SET_SUBTRACTION_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*(\-)\s*([0-9]+)$')
-
-	# Addition set with one or more variables..
+	# with one or more variables..
 	# set X = X + 1
-	# set X = A + B
-	RE_SET_ADDITION_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\+)\s*([0-9]+|\$[A-Za-z]+)$')
-
-	# Subtraction set with one or more variables..
-	# set X = X - 1
-	# set X = A - B
-	RE_SET_SUBTRACTION_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\-)\s*([0-9]+|\$[A-Za-z]+)$')
-
+	# set X = A * B
+	RE_SET_ADDSUBMUL_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\+|\-|\*|\/)\s*([0-9]+|\$[A-Za-z]+)$')
 
 	def _parse(self, token):
 		kind, params = token[1]
@@ -346,9 +335,9 @@ class SetMacro(AbstractMacro):
 			self.expr = self._parse_expression(match.group(2))
 			return
 		
-		match = SetMacro.RE_SET_ADDITION_1.match(params.lstrip().rstrip())
+		match = SetMacro.RE_SET_ADDSUBMUL_1.match(params.lstrip().rstrip())
 		if match:
-			print("SetMacro: Addition with literals")
+			print("SetMacro: Add/Sub/Mul/Div with literals")
 			self.target = match.group(1)
 			self.set_type = 'math'
 			self.operator = match.group(3)
@@ -357,36 +346,15 @@ class SetMacro(AbstractMacro):
 			self.expr = self._parse_expression(match.group(2))
 			return
 		
-		match = SetMacro.RE_SET_ADDITION_2.match(params.lstrip().rstrip())
+		match = SetMacro.RE_SET_ADDSUBMUL_2.match(params.lstrip().rstrip())
 		if match:
-			print("SetMacro: Addition with variables")
+			print("SetMacro: Add/Sub/Mul/Div with variables")
 			self.target = match.group(1)
 			self.set_type = 'math'
 			self.operator = match.group(3)
 			self.operand_1 = match.group(2)
 			self.operand_2 = match.group(4)
 			self.expr = self._parse_expression(match.group(2))
-			return
-
-		match = SetMacro.RE_SET_SUBTRACTION_1.match(params.lstrip().rstrip())
-		if match:
-			print("SetMacro: Subtraction with literals")
-			self.target = match.group(1)
-			self.set_type = 'math'
-			self.operator = match.group(3)
-			self.operand_1 = match.group(2)
-			self.operand_2 = match.group(4)
-			self.expr = self._parse_expression(match.group(2))
-			return
-
-		match = SetMacro.RE_SET_SUBTRACTION_2.match(params.lstrip().rstrip())
-		if match:
-			print("SetMacro: Subtraction with variables")
-			self.target = match.group(1)
-			self.set_type = 'math'
-			self.operand_1 = match.group(2)
-			self.operand_2 = match.group(4)
-			self.operator = match.group(3)
 			return
 
 		self.error = 'invalid "set" expression: ' + params
@@ -408,11 +376,55 @@ class PrintMacro(AbstractMacro):
 class IfMacro(AbstractMacro):
 	"""Class for the 'if' macro"""
 
+	# Simple boolean: if x is true / if x = false
+	RE_EXPRESSION = re.compile(r'(not\s+|\!\s*|)(true|false|[A-Z0-9_\$]+)', flags=re.IGNORECASE)
+
+	# Less than / Great than: if x gt 7
+	RE_EXP_LT_GT = re.compile(r'([0-9]+|\$[A-Za-z]+)\s*(gt|lt)\s*([0-9]+|\$[A-Za-z]+)', flags=re.IGNORECASE)
+
+	# Less than or equal to: if x gte 7
+	RE_EXP_LTE_GTE = re.compile(r'([0-9]+|\$[A-Za-z]+)\s*(gte|lte)\s*([0-9]+|\$[A-Za-z]+)', flags=re.IGNORECASE)
+		
+	ops = {
+		'gt' : '>',
+		'lt' : '<',
+	}
+		
 	def _parse(self, token):
 		kind, params = token[1]
-		self.expr = self._parse_expression(params)
-		self.children = []
-		self.else_block = []
+			
+		match = IfMacro.RE_EXP_LT_GT.match(params.lstrip().rstrip())
+		if match:
+			print("IfMacro: LT/GT %s %s" % (kind, params))
+			self.expr = self._parse_expression(params)
+			self.children = []
+			self.else_block = []
+			self.target = match.group(1)
+			self.operand = match.group(3)
+			self.operator = self.ops[match.group(2)]
+			self.if_type = 'comparison'
+			return
+		
+		#match = IfMacro.RE_EXP_LTE_GTE.match(params.lstrip().rstrip())
+		#if match:
+		#	print("IfMacro: LTE/GTE %s %s" % (kind, params))
+		#	self.expr = self._parse_expression(params)
+		#	self.children = []
+		#	self.else_block = []
+		#	self.target = match.group(1)
+		#	self.operand = match.group(3)
+		#	self.operator = self.ops[match.group(2)]
+		#	self.if_type = 'comparison'
+		#	return
+			
+		match = IfMacro.RE_EXPRESSION.match(params.lstrip().rstrip())
+		if match:
+			print("IfMacro: Boolean %s %s" % (kind, params))
+			self.expr = self._parse_expression(params)
+			self.children = []
+			self.else_block = []
+			self.if_type = 'boolean'
+			return
 
 class EndMacro(AbstractMacro):
 	"""Class for closing the current macro"""
