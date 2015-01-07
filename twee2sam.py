@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import argparse, sys, os, glob, re, shutil
+from __future__ import print_function
+import argparse, sys, os, glob, re, shutil, os.path
 from operator import itemgetter
 scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
-sys.path.append(os.sep.join([scriptPath, 'tw']))
-sys.path.append(os.sep.join([scriptPath, 'lib']))
+sys.path.append(os.path.join(scriptPath, 'tw'))
+sys.path.append(os.path.join(scriptPath, 'lib'))
 from tiddlywiki import TiddlyWiki
 from twparser import TwParser
 
@@ -35,8 +36,8 @@ def main (argv):
 
 	sources = glob.glob(opts.sources)
 
-	if not len(sources):
-		print 'twee2sam: no source files specified\n'
+	if not sources:
+		print('twee2sam: no source files specified\n')
 		sys.exit(2)
 
 	for source in sources:
@@ -69,7 +70,7 @@ def main (argv):
 
 	# 'Start' _must_ be the first script
 	if not 'Start' in twp.passages:
-		print 'twee2sam: "Start" passage not found.\n'
+		print('twee2sam: "Start" passage not found.\n')
 		sys.exit(2)
 
 	process_passage_index(twp.passages['Start'])
@@ -88,7 +89,7 @@ def main (argv):
 	def script_name(s):
 		return name_to_identifier(s) + '.twsam'
 
-	with open(opts.destination + os.sep + 'Script.list.txt', 'w') as f_list:
+	with open(os.path.join(opts.destination, 'Script.list.txt'), 'w') as f_list:
 		for passage_name in passage_order:
 	 		passage = twp.passages[passage_name]
 			f_list.write(script_name(passage.title))
@@ -107,7 +108,7 @@ def main (argv):
 	image_list = []
 	music_list = []
 	for passage in twp.passages.values():
-		with open(opts.destination + os.sep + script_name(passage.title), 'w') as script:
+		with open(os.path.join(opts.destination, script_name(passage.title)), 'w') as script:
 
 			def check_print():
 				if check_print.pending:
@@ -119,7 +120,7 @@ def main (argv):
 			check_print.in_buffer = 0
 
 			def warning(msg):
-				print 'Warning on {0}: {1}'.format(passage.title, msg)
+				print('Warning on {0}: {1}'.format(passage.title, msg))
 
 			def out_string(msg):
 				msg = msg.replace('"', "'").replace('[', '{').replace(']', '}');
@@ -267,7 +268,7 @@ def main (argv):
 						try:
 							target = twp.passages[cmd.target]
 						except KeyError:
-							print >> sys.stderr, "Display macro target passage {0} not found!".format(cmd.target)
+							print("Display macro target passage {0} not found!".format(cmd.target), file=sys.stderr)
 							return
 						process_command_list(target.commands)
 
@@ -318,11 +319,11 @@ def main (argv):
 	# Function to copy the files on a list and generate a list file
 	#
 	def copy_and_build_list(list_file_name, file_list, item_extension, item_suffix = '', empty_item = 'blank'):
-		with open(opts.destination + os.sep + list_file_name, 'w') as list_file:
+		with open(os.path.join(opts.destination, list_file_name), 'w') as list_file:
 			for file_path in file_list:
 				item_name = name_to_identifier(os.path.splitext(os.path.basename(file_path))[0])
 				list_file.write(item_name + item_suffix + '\n')
-				shutil.copyfile(src_dir + os.sep + file_path, opts.destination + os.sep + item_name + '.' + item_extension)
+				shutil.copyfile(os.path.join(src_dir, file_path), os.path.join(opts.destination, '%s.%s' % (item_name, item_extension)))
 
 			if not file_list:
 				list_file.write(empty_item + item_suffix + '\n')
@@ -343,7 +344,7 @@ def main (argv):
 
 
 
-class VariableFactory:
+class VariableFactory(object):
 
 	def __init__(self, first_available):
 		self.next_available = first_available
@@ -399,4 +400,3 @@ class VariableFactory:
 
 if __name__ == '__main__':
 	main(sys.argv)
-
