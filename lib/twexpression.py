@@ -79,31 +79,22 @@ def method(s):
 
 # python expression syntax
 
-symbol("lambda", 20)
 symbol("if", 20); symbol("else") # ternary form
 
 infix_r("or", 30); infix_r("and", 40); prefix("not", 50)
 
-infix("in", 60); infix("not", 60) # not in
 infix("is", 60);
 infix("<", 60); infix("<=", 60)
 infix(">", 60); infix(">=", 60)
 infix("<>", 60); infix("!=", 60); infix("==", 60)
 
-infix("|", 70); infix("^", 80); infix("&", 90)
-
-infix("<<", 100); infix(">>", 100)
-
 infix("+", 110); infix("-", 110)
 
-infix("*", 120); infix("/", 120); infix("//", 120)
-infix("%", 120)
+infix("*", 120); infix("/", 120); infix("%", 120)
 
-prefix("-", 130); prefix("+", 130); prefix("~", 130)
+prefix("-", 130); prefix("+", 130);
 
-infix_r("**", 140)
-
-symbol(".", 150); symbol("[", 150); symbol("(", 150)
+symbol("(", 150)
 
 # additional behaviour
 
@@ -131,24 +122,6 @@ def led(self, left):
     self.third = expression()
     return self
 
-@method(symbol("."))
-def led(self, left):
-    if token.id != "(name)":
-        SyntaxError("Expected an attribute name.")
-    self.first = left
-    self.second = token
-    advance()
-    return self
-
-symbol("]")
-
-@method(symbol("["))
-def led(self, left):
-    self.first = left
-    self.second = expression()
-    advance("]")
-    return self
-
 symbol(")"); symbol(",")
 
 @method(symbol("("))
@@ -166,30 +139,6 @@ def led(self, left):
 
 symbol(":"); symbol("=")
 
-@method(symbol("lambda"))
-def nud(self):
-    self.first = []
-    if token.id != ":":
-        argument_list(self.first)
-    advance(":")
-    self.second = expression()
-    return self
-
-def argument_list(list):
-    while 1:
-        if token.id != "(name)":
-            SyntaxError("Expected an argument name.")
-        list.append(token)
-        advance()
-        if token.id == "=":
-            advance()
-            list.append(expression())
-        else:
-            list.append(None)
-        if token.id != ",":
-            break
-        advance(",")
-
 # constants
 
 def constant(id):
@@ -199,85 +148,8 @@ def constant(id):
         self.value = id
         return self
 
-constant("None")
-constant("True")
-constant("False")
-
-# multitoken operators
-
-@method(symbol("not"))
-def led(self, left):
-    if token.id != "in":
-        raise SyntaxError("Invalid syntax")
-    advance()
-    self.id = "not in"
-    self.first = left
-    self.second = expression(60)
-    return self
-
-@method(symbol("is"))
-def led(self, left):
-    if token.id == "not":
-        advance()
-        self.id = "is not"
-    self.first = left
-    self.second = expression(60)
-    return self
-
-# displays
-
-@method(symbol("("))
-def nud(self):
-    self.first = []
-    comma = False
-    if token.id != ")":
-        while 1:
-            if token.id == ")":
-                break
-            self.first.append(expression())
-            if token.id != ",":
-                break
-            comma = True
-            advance(",")
-    advance(")")
-    if not self.first or comma:
-        return self # tuple
-    else:
-        return self.first[0]
-
-symbol("]")
-
-@method(symbol("["))
-def nud(self):
-    self.first = []
-    if token.id != "]":
-        while 1:
-            if token.id == "]":
-                break
-            self.first.append(expression())
-            if token.id != ",":
-                break
-            advance(",")
-    advance("]")
-    return self
-
-symbol("}")
-
-@method(symbol("{"))
-def nud(self):
-    self.first = []
-    if token.id != "}":
-        while 1:
-            if token.id == "}":
-                break
-            self.first.append(expression())
-            advance(":")
-            self.first.append(expression())
-            if token.id != ",":
-                break
-            advance(",")
-    advance("}")
-    return self
+constant("true")
+constant("false")
 
 # python tokenizer
 
@@ -306,6 +178,8 @@ def tokenize(program):
     if isinstance(program, list):
         source = program
     else:
+        # Hack to make JS boolean operators work with the Python tokenizer
+        program = program.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ')
         source = tokenize_python(program)
     for id, value in source:
         if id == "(literal)":
