@@ -254,6 +254,18 @@ def to_sam(program, var_locator = lambda s: s):
         else:
             # It's a no-op
             generated += [to_sam(parsed.first)]
+    elif parsed.id == '(':
+        # It's a function call
+        function_name = parsed.first.value
+        if function_name == 'random':
+            params = parsed.second
+            generated += ['r']
+            if len(params) == 1:
+                generated += [to_sam(params[0]), '\\']
+            elif len(params) == 2:
+                generated += [to_sam(params[1]), to_sam(params[0]), '-1+\\', to_sam(params[0]), '+']
+        else:
+            raise SyntaxError("Unknown function (%r)" % function_name)
     elif parsed.second:
         # Assumes it's a binary operator
         generated += [to_sam(parsed.first), to_sam(parsed.second), OPERATOR_TABLE.get(parsed.id, parsed.id)]
