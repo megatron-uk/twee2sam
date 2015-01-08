@@ -79,8 +79,6 @@ def method(s):
 
 # python expression syntax
 
-symbol("if", 20); symbol("else") # ternary form
-
 infix_r("or", 30); infix_r("and", 40); prefix("not", 50)
 
 infix("is", 60);
@@ -111,16 +109,6 @@ def nud(self):
     expr = expression()
     advance(")")
     return expr
-
-symbol("else")
-
-@method(symbol("if"))
-def led(self, left):
-    self.first = left
-    self.second = expression()
-    advance("else")
-    self.third = expression()
-    return self
 
 symbol(")"); symbol(",")
 
@@ -179,7 +167,7 @@ def tokenize(program):
         source = program
     else:
         # Hack to make JS boolean operators work with the Python tokenizer
-        program = program.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ')
+        program = program.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ').strip()
         source = tokenize_python(program)
     for id, value in source:
         if id == "(literal)":
@@ -221,3 +209,55 @@ def parse(program):
 def test(program):
     print ">>>", program
     print parse(program)
+
+#
+# Code generation (maybe should be moved to another module)
+#
+
+CONST_TABLE = {
+    'true': '1',
+    'false': '0'
+}
+
+OPERATOR_TABLE = {
+    'or': '+0>',
+    'and': '*0>',
+    'not': '0=',
+    'is': '=',
+    'is': '=',
+    '==': '=',
+    '<>': '=0=',
+    '!=': '=0=',
+    '<=': '>0=',
+    '>=': '<0=',
+    '%': '\\'
+}
+
+def to_sam(program, var_locator = lambda s: s):
+    parsed = parse(program) if isinstance(program, basestring) else program
+    generated = []
+    if parsed.id == '(literal)':
+        # It's either a numeric literal or a constant
+        generated += [CONST_TABLE.get(parsed.value, parsed.value), ' ']
+    elif parsed.id == '(name)':
+        # It's reading a variable
+        var_name = var_locator(parsed.value)
+        generated += [var_name, ' :' if var_name.isdigit() else ':']
+    elif parsed.id in ('+', '-'):
+        # + and - can be either unary or binary.
+        if parsed.second:
+            # It's binary
+            generated += [to_sam(parsed.first), to_sam(parsed.second), parsed.id]
+        elif parsed.id == '-':
+            # It's a negation
+            generated += ['0 ', to_sam(parsed.first), '-']
+        else:
+            # It's a no-op
+            generated += [to_sam(parsed.first)]
+    elif parsed.second:
+        # Assumes it's a binary operator
+        generated += [to_sam(parsed.first), to_sam(parsed.second), OPERATOR_TABLE.get(parsed.id, parsed.id)]
+    else:
+        # Assumes it's an unary operator
+        generated += [to_sam(parsed.first), OPERATOR_TABLE.get(parsed.id, parsed.id)]
+    return ''.join(generated)
