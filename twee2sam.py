@@ -27,7 +27,7 @@ def main (argv):
 
     # construct a TW object
 
-    tw = TiddlyWiki(opts.author)
+    tw = TiddlyWiki()
 
     # read in a file to be merged
 
