@@ -167,7 +167,7 @@ def tokenize(program):
         source = program
     else:
         # Hack to make JS boolean operators work with the Python tokenizer
-        program = program.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ').strip()
+        program = program.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ').replace('$', '').strip()
         source = tokenize_python(program)
     for id, value in source:
         if id == "(literal)":
@@ -233,43 +233,48 @@ OPERATOR_TABLE = {
     '%': '\\'
 }
 
-def to_sam(program, var_locator = lambda s: s):
+def to_sam(program, var_locator = lambda s: s + '?'):
     parsed = parse(program) if isinstance(program, basestring) else program
-    generated = []
-    if parsed.id == '(literal)':
-        # It's either a numeric literal or a constant
-        generated += [CONST_TABLE.get(parsed.value, parsed.value), ' ']
-    elif parsed.id == '(name)':
-        # It's reading a variable
-        var_name = var_locator(parsed.value)
-        generated += [var_name, ' :' if var_name.isdigit() else ':']
-    elif parsed.id in ('+', '-'):
-        # + and - can be either unary or binary.
-        if parsed.second:
-            # It's binary
-            generated += [to_sam(parsed.first), to_sam(parsed.second), parsed.id]
-        elif parsed.id == '-':
-            # It's a negation
-            generated += ['0 ', to_sam(parsed.first), '-']
+
+    def process_node(parsed):
+        generated = []
+        if parsed.id == '(literal)':
+            # It's either a numeric literal or a constant
+            generated += [CONST_TABLE.get(parsed.value, parsed.value), ' ']
+        elif parsed.id == '(name)':
+            # It's reading a variable
+            var_name = var_locator(parsed.value)
+            generated += [var_name, ' :' if var_name.isdigit() else ':']
+        elif parsed.id in ('+', '-'):
+            # + and - can be either unary or binary.
+            if parsed.second:
+                # It's binary
+                generated += [process_node(parsed.first), process_node(parsed.second), parsed.id]
+            elif parsed.id == '-':
+                # It's a negation
+                generated += ['0 ', process_node(parsed.first), '-']
+            else:
+                # It's a no-op
+                generated += [process_node(parsed.first)]
+        elif parsed.id == '(':
+            # It's a function call
+            function_name = parsed.first.value
+            if function_name == 'random':
+                params = parsed.second
+                generated += ['r']
+                if len(params) == 1:
+                    generated += [process_node(params[0]), '\\']
+                elif len(params) == 2:
+                    generated += [process_node(params[1]), process_node(params[0]), '-1+\\', process_node(params[0]), '+']
+            else:
+                raise SyntaxError("Unknown function (%r)" % function_name)
+        elif parsed.second:
+            # Assumes it's a binary operator
+            generated += [process_node(parsed.first), process_node(parsed.second), OPERATOR_TABLE.get(parsed.id, parsed.id)]
         else:
-            # It's a no-op
-            generated += [to_sam(parsed.first)]
-    elif parsed.id == '(':
-        # It's a function call
-        function_name = parsed.first.value
-        if function_name == 'random':
-            params = parsed.second
-            generated += ['r']
-            if len(params) == 1:
-                generated += [to_sam(params[0]), '\\']
-            elif len(params) == 2:
-                generated += [to_sam(params[1]), to_sam(params[0]), '-1+\\', to_sam(params[0]), '+']
-        else:
-            raise SyntaxError("Unknown function (%r)" % function_name)
-    elif parsed.second:
-        # Assumes it's a binary operator
-        generated += [to_sam(parsed.first), to_sam(parsed.second), OPERATOR_TABLE.get(parsed.id, parsed.id)]
-    else:
-        # Assumes it's an unary operator
-        generated += [to_sam(parsed.first), OPERATOR_TABLE.get(parsed.id, parsed.id)]
-    return ''.join(generated)
+            # Assumes it's an unary operator
+            generated += [process_node(parsed.first), OPERATOR_TABLE.get(parsed.id, parsed.id)]
+
+        return ''.join(generated)
+
+    return process_node(parsed)

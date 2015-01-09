@@ -1,6 +1,5 @@
 ﻿:: Start
 
-
 You're in a corridor branching in two directions
 <<pause>>
 * [[Go forward to the door|Door]]

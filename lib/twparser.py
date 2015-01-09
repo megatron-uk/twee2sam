@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import re
+import sys, re, twexpression
 
 __version__ = "0.2"
 
@@ -261,7 +261,7 @@ class AbstractMacro(AbstractCmd):
 
     RE_EXPRESSION = re.compile(r'(not\s+|\!\s*|)(true|false|[A-Z0-9_\$]+)', flags=re.IGNORECASE)
     RE_PRINT = re.compile(r'(\$[A-Za-z0-9_]+)', flags=re.IGNORECASE)
-        
+
     def __init__(self, token, children=[]):
         self.params = token[1][1]
         self.error = None
@@ -274,29 +274,10 @@ class AbstractMacro(AbstractCmd):
         pass
 
     def _parse_expression(self, expr):
-        expr = expr.strip()
-        match = AbstractMacro.RE_EXPRESSION.match(expr)
-        if match:
-            op = 'not' if match.group(1) else ''
-            val = match.group(2)
-            lc_val = val.lower()
-            if lc_val == 'true':
-                return (op, True)
-            elif lc_val == 'false':
-                return (op, False)
-            else:
-                return (op, val)
-        else:
-            self.error = 'invalid expression: ' + expr
-
-    def _parse_print(self, expr):
-        expr = expr.strip()
-        match = AbstractMacro.RE_PRINT.match(expr)
-        if not match:
-            self.error = 'invalid expression: ' + expr
-        else:
-            val = match.group(1)
-            return val
+        try:
+            return twexpression.parse(expr)
+        except SyntaxError as e:
+            self.error = 'invalid expression: {0}: {1}'.format(str(e), expr)
 
 class InvalidMacro(AbstractMacro):
     """Class for invalid macros"""
@@ -309,63 +290,28 @@ class InvalidMacro(AbstractMacro):
 class SetMacro(AbstractMacro):
     """Class for the 'set' macro"""
 
-    # Normal set..
-    # set X = 99
-    RE_ATTRIBUTION = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+|true|false)$')
-    
-    # with literals..
-    # set X = 2 + 1
-    RE_SET_ADDSUBMUL_1 = re.compile(r'([\w\$]+)\s*(?:=|\sto\s)\s*([0-9]+)\s*([\+\-\/\*])\s*([0-9]+)$')
-    
-    # with one or more variables..
-    # set X = X + 1
-    # set X = A * B
-    RE_SET_ADDSUBMUL_2 = re.compile(r'([\w\$]+)\s*(?:=\s)\s*([0-9]+|\$[A-Za-z]+)\s*(\+|\-|\*|\/)\s*([0-9]+|\$[A-Za-z]+)$')
+    RE_ATTRIBUTION = re.compile(r'\s*([\w\$]+)\s*(?:=|\sto\s)\s*(.*)')
 
     def _parse(self, token):
-        kind, params = token[1]
-        match = SetMacro.RE_ATTRIBUTION.match(params.lstrip().rstrip())
-        if match:
-            print("SetMacro: Normal set")
-            self.target = match.group(1)
-            self.set_type = 'assign'
-            self.expr = self._parse_expression(match.group(2))
-            return
-        
-        match = SetMacro.RE_SET_ADDSUBMUL_1.match(params.lstrip().rstrip())
-        if match:
-            print("SetMacro: Add/Sub/Mul/Div with literals")
-            self.target = match.group(1)
-            self.set_type = 'math'
-            self.operator = match.group(3)
-            self.operand_1 = match.group(2)
-            self.operand_2 = match.group(4)
-            self.expr = self._parse_expression(match.group(2))
-            return
-        
-        match = SetMacro.RE_SET_ADDSUBMUL_2.match(params.lstrip().rstrip())
-        if match:
-            print("SetMacro: Add/Sub/Mul/Div with variables")
-            self.target = match.group(1)
-            self.set_type = 'math'
-            self.operator = match.group(3)
-            self.operand_1 = match.group(2)
-            self.operand_2 = match.group(4)
-            self.expr = self._parse_expression(match.group(2))
-            return
+    	kind, params = token[1]
 
-        self.error = 'invalid "set" expression: ' + params
-        return
-        
+    	match = SetMacro.RE_ATTRIBUTION.match(params)
+    	if not match:
+    		self.error = 'invalid "set" expression: ' + params
+    		return
+
+    	self.target = match.group(1)
+        self.expr = self._parse_expression(match.group(2))
+
 class PauseMacro(AbstractMacro):
     """Class for the 'pause' macro"""
 
 class PrintMacro(AbstractMacro):
     """Class for a 'print' macro which displays the value of a variable"""
-    
+
     def _parse(self, token):
         kind, params = token[1]
-        self.expr = self._parse_print(params.lstrip())
+        self.expr = self._parse_expression(params.lstrip())
         self.target = self.expr
 
 class DisplayMacro(AbstractMacro):
@@ -384,9 +330,9 @@ class CallMacro(AbstractMacro):
     RE_CALL = re.compile(r'\s*([A-Za-z0-9_]+)\s*$')
 
     def _parse(self, token):
-    
+
         kind, params = token[1]
-    
+
         match = CallMacro.RE_CALL.match(params.lstrip().rstrip())
         if match:
             print("CallMacro: Call subroutine %s %s" % (kind, params))
@@ -405,55 +351,11 @@ class ReturnMacro(AbstractMacro):
 class IfMacro(AbstractMacro):
     """Class for the 'if' macro"""
 
-    # Simple boolean: if x is true / if x = false
-    RE_EXPRESSION = re.compile(r'(not\s+|\!\s*|)(true|false|[A-Z0-9_\$]+)', flags=re.IGNORECASE)
-
-    # Less than / Great than: if x gt 7
-    RE_EXP_LT_GT = re.compile(r'([0-9]+|\$[A-Za-z]+)\s*(gt|lt)\s*([0-9]+|\$[A-Za-z]+)', flags=re.IGNORECASE)
-
-    # Less than or equal to: if x gte 7
-    RE_EXP_LTE_GTE = re.compile(r'([0-9]+|\$[A-Za-z]+)\s*(gte|lte)\s*([0-9]+|\$[A-Za-z]+)', flags=re.IGNORECASE)
-        
-    ops = {
-        'gt' : '>',
-        'lt' : '<',
-    }
-        
     def _parse(self, token):
         kind, params = token[1]
-            
-        match = IfMacro.RE_EXP_LT_GT.match(params.lstrip().rstrip())
-        if match:
-            print("IfMacro: LT/GT %s %s" % (kind, params))
-            self.expr = self._parse_expression(params)
-            self.children = []
-            self.else_block = []
-            self.target = match.group(1)
-            self.operand = match.group(3)
-            self.operator = self.ops[match.group(2)]
-            self.if_type = 'comparison'
-            return
-        
-        #match = IfMacro.RE_EXP_LTE_GTE.match(params.lstrip().rstrip())
-        #if match:
-        #	print("IfMacro: LTE/GTE %s %s" % (kind, params))
-        #	self.expr = self._parse_expression(params)
-        #	self.children = []
-        #	self.else_block = []
-        #	self.target = match.group(1)
-        #	self.operand = match.group(3)
-        #	self.operator = self.ops[match.group(2)]
-        #	self.if_type = 'comparison'
-        #	return
-            
-        match = IfMacro.RE_EXPRESSION.match(params.lstrip().rstrip())
-        if match:
-            print("IfMacro: Boolean %s %s" % (kind, params))
-            self.expr = self._parse_expression(params)
-            self.children = []
-            self.else_block = []
-            self.if_type = 'boolean'
-            return
+        self.expr = self._parse_expression(params)
+        self.children = []
+        self.else_block = []
 
 class EndMacro(AbstractMacro):
     """Class for closing the current macro"""

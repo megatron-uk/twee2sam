@@ -9,6 +9,7 @@ sys.path.append(os.path.join(scriptPath, 'tw'))
 sys.path.append(os.path.join(scriptPath, 'lib'))
 from tiddlywiki import TiddlyWiki
 from twparser import TwParser
+import twexpression
 
 __version__ = "0.7.1"
 
@@ -142,85 +143,37 @@ def main (argv):
                 check_print.in_buffer += len(msg)
 
             def out_set(cmd):
-                # Can be either a straight assign: set a = 1
-                if cmd.set_type is 'assign':
-                    out_expr(cmd.expr)
-                    script.write(' ')
-                    target = variables.set_var(cmd.target)
-                    script.write(target + '\n')
-                # or can be a math function: set a = b + 1
-                if cmd.set_type is 'math':
-                    target = variables.set_var(cmd.target)
-                    if cmd.operand_1[0] == '$':
-                        script.write(variables.get_var(cmd.operand_1))
-                    else:
-                        script.write(cmd.operand_1)
-                    script.write(' ')
-                    if cmd.operand_2[0] == '$':
-                        script.write(variables.get_var(cmd.operand_2))
-                    else:
-                        script.write(cmd.operand_2)
-                    script.write(' ')
-                    script.write(cmd.operator)
-                    script.write(' ')
-                    script.write(target + '\n')
+                out_expr(cmd.expr)
+                script.write(' ')
+                target = variables.set_var(cmd.target)
+                script.write(target + '\n')
 
             def out_if(cmd):
-                # is the if a simple boolean?
-                if cmd.if_type is 'boolean':
-                    out_expr(cmd.expr)
-                    script.write('[\n')
-                    process_command_list(cmd.children, True)
-                    script.write(' 0]\n')
-
-                # is the if a comparison between variables/literals?
-                if cmd.if_type is 'comparison':
-                    script.write(variables.get_var(cmd.target))
-                    script.write(' ')
-                    if cmd.operand[0] == '$':
-                        script.write(variables.get_var(cmd.operand))
-                    else:
-                        script.write(cmd.operand)
-                    script.write(' ')
-                    script.write(cmd.operator)
-                    script.write(' ')
-                    script.write('[\n')
-                    process_command_list(cmd.children, True)
-                    script.write(' 0]\n')
-                
+                out_expr(cmd.expr)
+                script.write('[\n')
+                process_command_list(cmd.children, True)
+                script.write(' 0]\n')
 
             def out_print(cmd):
                 # print a numeric qvariable
-                val = cmd.expr
-                target = variables.get_var(cmd.target)
-                script.write(target)
+                out_expr(cmd.expr)
                 script.write('"\#"')
-            
+
             def out_expr(expr):
-                op, val = expr
-                if (op is '') and (val not in [True, False]) and (val[0] != '$'):
-                    intval = int(val)
-                    script.write(str(intval))
-                else:
-                    if val is True:
-                        script.write('1')
-                    elif val is False:
-                        script.write('0')
-                    else:
-                        script.write(variables.get_var(val))
+                def var_locator(name):
+                    return variables.get_var(name).replace(':', '')
+                generated = twexpression.to_sam(expr, var_locator = var_locator)
+                script.write(generated)
 
-                    if op == 'not':
-                        script.write(' 0=')
-
-                    def out_call(cmd):
-                        call_target = None
-                        for k in passage_indexes.keys():
-                            if cmd.target == k:
-                                call_target = passage_indexes[k]
-                        if call_target:
-                            script.write(str(call_target))
-                            script.write('c')
-                            script.write('\n')
+            def out_call(cmd):
+                call_target = None
+                for k in passage_indexes.keys():
+                    if cmd.target == k:
+                        call_target = passage_indexes[k]
+                if call_target:
+                    script.write(str(call_target))
+                    script.write('c')
+                    script.write('\n')
 
             # Outputs all the text
 
@@ -240,7 +193,7 @@ def main (argv):
                             out_string(text)
                             check_print.pending = True
                     elif cmd.kind == 'print':
-                        out_print(cmd)                                	
+                        out_print(cmd)
                     elif cmd.kind == 'image':
                         check_print()
                         if not cmd.path in image_list:
@@ -361,6 +314,8 @@ class VariableFactory(object):
         self.temps = []
 
     def set_var(self, name):
+        name = self._normalize_name(name)
+
         if not name in self.vars:
             self._create_var(name)
             self.never_used.append(name)
@@ -371,6 +326,8 @@ class VariableFactory(object):
         return '{0}.'.format(self.vars[name])
 
     def get_var(self, name):
+        name = self._normalize_name(name)
+
         if not name in self.vars:
             self._create_var(name)
             self.never_set.append(name)
@@ -398,6 +355,9 @@ class VariableFactory(object):
 
     def _num_to_ref(self, num):
         return chr(ord('A') + num)
+
+    def _normalize_name(self, name):
+        return name.replace('$', '').strip()
 
 
 
